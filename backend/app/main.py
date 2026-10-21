@@ -85,27 +85,52 @@ def get_demo_companies():
 
 @app.get("/companies/{company_id}/feed", response_model=list[FeedItem])
 def get_feed(company_id: str):
-    # временная мера тк лента не персонализирована еще (у всех клиентов она одинакова)
-    return [
-        FeedItem(
-            insight_id="ins_001",
-            title="Заголовок события 1",
-            date="2026-10-20",
-            relevance=0.9,
-            kind=ItemKind.risk,
-            why_for_you=["признак компании 1", "признак компании 2"],
-            source="Название источника"
-        ),
-        FeedItem(
-            insight_id="ins_002",
-            title="Заголовок события 2",
-            date="2026-10-19",
-            relevance=0.3,
-            kind=ItemKind.opportunity,
-            why_for_you=["признак компании 1"],
-            source="Название источника"
-        )
-    ]
+    # у каждого клиента демки своя лента, для остальных вылезает 404
+    feeds = {
+        "U_demo1": [
+            FeedItem(
+                insight_id="ins_001",
+                title="Заголовок события 1",
+                date="2026-10-20",
+                relevance=0.9,
+                kind=ItemKind.risk,
+                why_for_you=["признак компании 1", "признак компании 2"],
+                source="Название источника"
+            ),
+            FeedItem(
+                insight_id="ins_002",
+                title="Заголовок события 2",
+                date="2026-10-19",
+                relevance=0.3,
+                kind=ItemKind.opportunity,
+                why_for_you=["признак компании 1"],
+                source="Название источника"
+            )
+        ],
+        "U_demo2": [
+            FeedItem(
+                insight_id="ins_002",
+                title="Заголовок события 2",
+                date="2026-10-19",
+                relevance=0.8,
+                kind=ItemKind.opportunity,
+                why_for_you=["признак компании 3"],
+                source="Название источника"
+            ),
+            FeedItem(
+                insight_id="ins_003",
+                title="Заголовок события 3",
+                date="2026-10-18",
+                relevance=0.5,
+                kind=ItemKind.neutral,
+                why_for_you=["признак компании 3", "признак компании 4"],
+                source="Название источника"
+            )
+        ]
+    }
+    if company_id not in feeds:
+        raise HTTPException(status_code=404, detail=f"Клиент {company_id} не найден")
+    return feeds[company_id]
 
 
 @app.post("/auth/login", response_model=LoginResponse)
