@@ -11,12 +11,12 @@ def health():
 
 @app.get("/insights/{insight_id}", response_model=InsightCard)
 def get_insight(insight_id: str):
-    # тексты в кавычках чисто симолические, считайте что это демо-версия
+    # тексты в кавычках чисто символические, считайте что это демо-версия
     return InsightCard(
         id=insight_id,
         company_id="U_demo",
         relevance=0.5,
-        event = Event(
+        event=Event(
             title="Заголовок события",
             date="2026-10-20",
             summary=[
@@ -30,7 +30,7 @@ def get_insight(insight_id: str):
         why_it_matters=[
             Claim(
                 text="Здесь будет объяснение того, почему это важно для компании",
-                type=ClaimType.ai_reference,
+                type=ClaimType.ai_inference,
                 features=["какой-то признак компании"]
             )
         ],
@@ -50,7 +50,7 @@ def get_insight(insight_id: str):
         ],
         actions=[
             Claim(
-                text="здесь будет предложение конкретнорго действия",
+                text="здесь будет предложение конкретного действия",
                 type=ClaimType.ai_inference,
                 features=["признак компании"]
             )
@@ -59,7 +59,7 @@ def get_insight(insight_id: str):
             Claim(
                 text="Здесь будет позиция Альфа банка",
                 type=ClaimType.bank_view,
-                sources=[Source(doc="файл_аеалитики.pdf")]
+                sources=[Source(doc="файл_аналитики.pdf")]
             )
         ],
         uncertainty="На будущее для проверки формата"
