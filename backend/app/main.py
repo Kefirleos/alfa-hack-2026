@@ -59,7 +59,7 @@ def get_insight(insight_id: str):
             Claim(
                 text="Здесь будет позиция Альфа банка",
                 type=ClaimType.bank_view,
-                sources=[Source(doc="файл_аналитики.pdf")]
+                sources=[Source(title="Название документа", doc="файл_аналитики.pdf")]
             )
         ],
         uncertainty="На будущее для проверки формата"
