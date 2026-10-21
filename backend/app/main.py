@@ -1,7 +1,15 @@
 from fastapi import FastAPI
 from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GenAlpha News Insights API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5137", "http://localhost:3000"], # надо заменить на реальный порт
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 
 @app.get("/health")
