@@ -154,5 +154,5 @@ def compare(company_a: str, company_b: str):
 
 
 @app.post("/feedback")
-def feedback(data: FeedbackRequest): # пока ниче не сохраняется
+def feedback(data: FeedBackRequest): # пока ниче не сохраняется
     return {"status": "ok"}
