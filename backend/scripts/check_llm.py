@@ -28,7 +28,7 @@ def print_limit() -> bool:
 def check_model(role: str) -> None:
     try:
         model = llm_client.model_for(role)
-    except llm_client.LLMError as e:
+    except ValueError as e:
         print(f"{role:9} пропуск: {e}")
         return
 

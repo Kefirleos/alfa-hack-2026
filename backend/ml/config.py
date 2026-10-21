@@ -20,7 +20,7 @@ REFERENCE_DIR = _path("REFERENCE_DIR", "./data/reference")
 LLM_CACHE_DIR = _path("LLM_CACHE_DIR", "./llm_cache")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL")
 LLM_API_KEY = os.getenv("LLM_API_KEY")
-LLM_TIMEOUT = os.getenv("LLM_TIMEOUT")
+LLM_TIMEOUT = os.getenv("LLM_TIMEOUT", "90")
 OFFLINE_MODE = os.getenv("OFFLINE_MODE", "0") == "1"
 
 RAW_DIR       = _path("RAW_DATA_DIR",  "./data/raw")
