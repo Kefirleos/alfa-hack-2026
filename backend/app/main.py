@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem, UserRole, LoginRequest, LoginResponse, TraceStep, ChatRequest, ChatAnswer
+from fastapi import FastAPI, HTTPException
+from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem, UserRole, LoginRequest, LoginResponse, TraceStep, ChatRequest, ChatAnswer, CustomNewsRequest, CompareResult, FeedBackRequest
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GenAlpha News Insights API")
@@ -132,3 +132,27 @@ def chat(insight_id: str, data: ChatRequest): # ответ пока не зав�
     return ChatAnswer(
         answer=[Claim(text="здесь будет ответ на вопрос пользователя", type=ClaimType.ai_inference)]
     )
+
+
+@app.post("/insights/custom", response_model=InsightCard)
+def custom_insight(data: CustomNewsRequest): # возвращаем ту же демку карточки
+    return get_insight("ins_custom")
+
+
+@app.get("/compare", response_model=CompareResult)
+def compare(company_a: str, company_b: str):
+    companies = {c.id: c for c in get_demo_companies()}
+    for company_id in (company_a, company_b):
+        if company_id not in companies:
+            raise HTTPException(status_code=404, detail=f"Клиент {company_id} не найден")
+    return CompareResult(
+        company_a=companies[company_a],
+        company_b=companies[company_b],
+        feed_a=get_feed(company_a),
+        feed_b=get_feed(company_b)
+    )
+
+
+@app.post("/feedback")
+def feedback(data: FeedbackRequest): # пока ниче не сохраняется
+    return {"status": "ok"}

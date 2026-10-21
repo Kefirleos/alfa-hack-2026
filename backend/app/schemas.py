@@ -101,4 +101,22 @@ class ChatRequest(BaseModel):
 class ChatAnswer(BaseModel):
     answer: list[Claim] # ответ тож разбит на утверждения с типом и источниками
 
-    
+
+class CustomNewsRequest(BaseModel):
+    company_id: str
+    role: UserRole
+    text: str | None = None # текст новости
+    url: str | None = None # или ссылка на саму новость
+
+
+class CompareResult(BaseModel):
+    company_a: CompanyShort
+    company_b: CompanyShort
+    feed_a: list[FeedItem]
+    feed_b: list[FeedItem]
+
+
+class FeedBackRequest(BaseModel):
+    insight_id: str
+    useful: bool # да или нет
+    reason: str | None = None
