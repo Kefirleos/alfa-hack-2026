@@ -65,3 +65,40 @@ class FeedItem(BaseModel): # короткая версия карточки дл
     kind: ItemKind
     why_for_you: list[str] # пара коротких признаков компании
     source: str
+
+
+class UserRole(str, Enum):
+    ceo = "ceo" # ген директор
+    cfo = "cfo" # фин директор
+    treasurer = "treasurer" # руководитель казначейства
+    accountant = "accountant" # главный бухгалтер
+
+
+class LoginRequest(BaseModel):
+    login: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    user_name: str
+    role: UserRole
+    company_id: str
+
+
+class TraceStep(BaseModel): # пошаговая работа агента
+    step: int
+    name: str # название шага
+    tool: str | None = None # какой инструмент использован
+    result: str # краткий результат шага
+    sources: list[Source] = []
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatAnswer(BaseModel):
+    answer: list[Claim] # ответ тож разбит на утверждения с типом и источниками
+
+    

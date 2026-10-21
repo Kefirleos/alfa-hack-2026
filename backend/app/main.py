@@ -1,12 +1,12 @@
 from fastapi import FastAPI
-from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem
+from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem, UserRole, LoginRequest, LoginResponse, TraceStep, ChatRequest, ChatAnswer
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GenAlpha News Insights API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5137", "http://localhost:3000"], # надо заменить на реальный порт
+    allow_origins=["http://localhost:5173", "http://localhost:3000"], # надо заменить на реальный порт
     allow_methods=["*"],
     allow_headers=["*"]
 )
@@ -106,3 +106,29 @@ def get_feed(company_id: str):
             source="Название источника"
         )
     ]
+
+
+@app.post("/auth/login", response_model=LoginResponse)
+def login(data: LoginRequest): # пока что любой логин и пароль
+    return LoginResponse(
+        token="demo-token",
+        user_name="Тестовый пользователь",
+        role=UserRole.cfo,
+        company_id="U_demo1"
+    )
+
+
+@app.get("/insights/{insight_id}/trace", response_model=list[TraceStep])
+def get_trace(insight_id: str): # здесь будут шаги агента
+    return [
+        TraceStep(step=1, name="Планирование", result="Определили, какие данные нужны"),
+        TraceStep(step=2, name="Поиск новостей", tool="search_news", result="Нашли n новостей", sources=[Source(title="Название источника")]),
+        TraceStep(step=3, name="Самопроверка", result="Проверрили, что у каждого вывода есть источник")
+    ]
+
+
+@app.post("/insights/{insight_id}/chat", response_model=ChatAnswer)
+def chat(insight_id: str, data: ChatRequest): # ответ пока не зависит от вопроса
+    return ChatAnswer(
+        answer=[Claim(text="здесь будет ответ на вопрос пользователя", type=ClaimType.ai_inference)]
+    )
