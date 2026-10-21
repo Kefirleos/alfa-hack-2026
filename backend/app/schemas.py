@@ -42,3 +42,26 @@ class InsightCard(BaseModel):
     actions: list[Claim]
     bank_view: list[Claim]
     uncertainty: str | None = None
+
+
+class ItemKind(str, Enum):
+    risk = "risk" # событие несет риск
+    opportunity = "opportunity" # событие дает возможность
+    neutral = "neutral" # нейтральное, к сведению
+
+
+class CompanyShort(BaseModel):
+    id: str
+    name: str # условное название (в данных названий компаний нету)
+    industry: str # отрасль
+    region: str
+
+
+class FeedItem(BaseModel): # короткая версия карточки для ленты, insight_id совпадает со значением запроса /insights/{insight_id}
+    insight_id: str # по нему откроется полная карточка
+    title: str
+    date: str
+    relevance: float # от 0 до 1. Чем больше, тем значимее, и, соответственно, выше в ленте
+    kind: ItemKind
+    why_for_you: list[str] # пара коротких признаков компании
+    source: str

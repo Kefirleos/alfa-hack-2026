@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.schemas import ClaimType, Source, Claim, Event, InsightCard
+from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem
 
 app = FastAPI(title="GenAlpha News Insights API")
 
@@ -64,3 +64,37 @@ def get_insight(insight_id: str):
         ],
         uncertainty="На будущее для проверки формата"
     )
+
+
+@app.get("/companies/demo", response_model=list[CompanyShort])
+def get_demo_companies():
+    # тоже демка, позже здесь будут лежать данные клиентов
+    return [
+        CompanyShort(id="U_demo1", name="Клиент 1", industry="Название отрасли", region="Название региона"),
+        CompanyShort(id="U_demo2", name="Клиент 2", industry="Название отрасли", region="Название региона")
+    ]
+
+
+@app.get("/companies/{company_id}/feed", response_model=list[FeedItem])
+def get_feed(company_id: str):
+    # временная мера тк лента не персонализирована еще (у всех клиентов она одинакова)
+    return [
+        FeedItem(
+            insight_id="ins_001",
+            title="Заголовок события 1",
+            date="2026-10-20",
+            relevance=0.9,
+            kind=ItemKind.risk,
+            why_for_you=["признак компании 1", "признак компании 2"],
+            source="Название источника"
+        ),
+        FeedItem(
+            insight_id="ins_002",
+            title="Заголовок события 2",
+            date="2026-10-19",
+            relevance=0.3,
+            kind=ItemKind.opportunity,
+            why_for_you=["признак компании 1"],
+            source="Название источника"
+        )
+    ]
