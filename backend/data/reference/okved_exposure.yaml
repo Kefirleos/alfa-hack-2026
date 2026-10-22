@@ -1,0 +1,100 @@
+default:
+  name: Прочие отрасли
+  topics: {key_rate: 0.6, inflation: 0.5, macro_growth: 0.4, credit_conditions: 0.4, tax_reporting: 0.3}
+  signals: "Стоимость денег, инфляция, общая деловая активность."
+
+sections:
+  "46":
+    name: Оптовая торговля
+    deep: true
+    topics: {fx_rub: 0.9, import_customs: 0.9, inflation: 0.7, consumer_demand: 0.7, key_rate: 0.7,
+             credit_conditions: 0.6, logistics: 0.6, sanctions: 0.6, oil_gas: 0.4, regulation: 0.4, tax_reporting: 0.3}
+    signals: "Курс, импорт, цены поставщика, спрос. Деньги заморожены в запасах и отсрочках."
+    actions: "Проверить маржу по товарной группе, условия оплаты и запас. Для ВЭД уточнить валюту договора."
+    caution: "Состав товарных групп неизвестен: не переносить новость одного товарного рынка на всю оптовую торговлю."
+
+  "41":
+    name: Строительство зданий
+    deep: true
+    topics: {construction_materials: 0.9, real_estate: 0.9, project_finance: 0.9, key_rate: 0.9,
+             credit_conditions: 0.7, inflation: 0.6, labor_market: 0.5, metals: 0.5, regulation: 0.5, gov_procurement: 0.4}
+    signals: "Цена материалов, спрос на недвижимость, проектное финансирование."
+    actions: "Проверить бюджет проекта, запас ликвидности и условия договоров."
+    caution: "Стадия и тип проектов неизвестны."
+
+  "42":
+    name: Строительство инженерных сооружений
+    deep: true
+    topics: {gov_procurement: 0.9, construction_materials: 0.8, key_rate: 0.8, project_finance: 0.8,
+             credit_conditions: 0.7, metals: 0.6, components_supply: 0.5, inflation: 0.5, labor_market: 0.5, logistics: 0.4}
+    signals: "Инфраструктурные программы и крупные заказчики, цена материалов и оборудования, сроки поставок, стоимость заёмных средств."
+    actions: "Проверить бюджет процентов и контрактов, график обязательств и поступлений по проектам."
+    caution: "Не называть заказчиков: в данных их имён нет."
+
+  "43":
+    name: Специализированные строительные работы
+    topics: {construction_materials: 0.9, labor_market: 0.7, real_estate: 0.6, key_rate: 0.6,
+             credit_conditions: 0.5, inflation: 0.5, gov_procurement: 0.4}
+    signals: "Материалы, квалификации, субподрядчики, сроки."
+    actions: "Проверить смету, критичных подрядчиков и условия авансирования."
+
+  "27":
+    name: Производство электрооборудования
+    deep: true
+    topics: {components_supply: 0.9, metals: 0.7, key_rate: 0.7, gov_procurement: 0.6, credit_conditions: 0.6,
+             energy_tariffs: 0.6, fx_rub: 0.6, import_customs: 0.5, macro_growth: 0.5, labor_market: 0.4, regulation: 0.4}
+    signals: "Спрос заказчиков, стоимость компонентов и металла, финансирование производственного цикла."
+    actions: "Оценить чувствительность процентных расходов, перечень компонентов для проверки, зависимость от крупных поступлений."
+    caution: "Добавлено для проверки иной структуры затрат: медь и алюминий важнее стали."
+
+  "45":
+    name: Торговля и ремонт автомобилей
+    topics: {auto_market: 0.9, import_customs: 0.8, fx_rub: 0.8, key_rate: 0.7, consumer_demand: 0.7, credit_conditions: 0.6}
+    signals: "Спрос, правила ввоза, комплектующие, стоимость финансирования запасов."
+    actions: "Сравнить сценарии закупки и оборачиваемости."
+    caution: "Не переносить новости легковых авто на все виды техники."
+
+  "47":
+    name: Розничная торговля
+    topics: {consumer_demand: 0.9, inflation: 0.8, regulation: 0.6, key_rate: 0.5, fx_rub: 0.5,
+             import_customs: 0.5, labor_market: 0.4, real_estate: 0.4}
+    signals: "Потребительский спрос, закупочные цены, требования к товарам."
+    actions: "Проверить ассортимент, валовую маржу, товарные остатки и применимость новых правил."
+
+  "49":
+    name: Наземный и трубопроводный транспорт
+    topics: {oil_gas: 0.9, logistics: 0.9, regulation: 0.5, key_rate: 0.5, credit_conditions: 0.5, labor_market: 0.4}
+    signals: "Топливо, ремонт, тарифы, ограничения движения."
+    actions: "Рассчитать чувствительность себестоимости рейса и пересмотр клиентского тарифа."
+
+  "52":
+    name: Складирование и транспортные услуги
+    topics: {logistics: 0.9, import_customs: 0.7, sanctions: 0.5, fx_rub: 0.5, real_estate: 0.4, key_rate: 0.4, oil_gas: 0.4}
+    signals: "Тарифы, ограничения маршрутов, загрузка складов, таможенные процедуры."
+    actions: "Проверить альтернативный маршрут и цену услуги с учётом срока доставки."
+    caution: "Фактические маршруты неизвестны: сначала уточнить направление операций."
+
+  "62":
+    name: Разработка ПО и ИТ-услуги
+    topics: {it_market: 0.9, labor_market: 0.8, tax_reporting: 0.6, gov_procurement: 0.5, regulation: 0.5, key_rate: 0.3}
+    signals: "Изменения требований заказчиков, господдержка, кадры, лицензии."
+    actions: "Оценить влияние на продажи и затраты, подготовить список затронутых контрактов."
+    caution: "Не делать вывод о применимости налоговой льготы без статуса аккредитации и иных условий."
+
+  "68":
+    name: Операции с недвижимостью
+    topics: {real_estate: 0.9, key_rate: 0.8, credit_conditions: 0.6, inflation: 0.5, energy_tariffs: 0.5, tax_reporting: 0.3}
+    signals: "Арендный спрос, ставки, эксплуатационные затраты."
+    actions: "Проверить индексацию аренды, вакантность и график обслуживания долга."
+
+  "71":
+    name: Архитектура, инженерия и испытания
+    topics: {gov_procurement: 0.7, regulation: 0.7, real_estate: 0.5, project_finance: 0.5, macro_growth: 0.4, labor_market: 0.4}
+    signals: "Технические нормы, закупки заказчиков, инвестиционные планы."
+    actions: "Выделить требования к проектам и новые направления спроса."
+
+  "73":
+    name: Реклама и исследования рынка
+    topics: {consumer_demand: 0.7, macro_growth: 0.5, regulation: 0.5, labor_market: 0.4, key_rate: 0.3}
+    signals: "Рекламные бюджеты заказчиков зависят от спроса и деловой активности."
+    actions: "Проверить воронку контрактов и зависимость от крупных заказчиков."
