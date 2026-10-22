@@ -1,0 +1,80 @@
+- file: Бонд_Бриф_14092026.pdf
+  title: "Бонд Бриф: итоги недели"
+  department: Рынок облигаций
+  date: 2026-09-14
+  date_approx: false
+  outdated: false
+  topics: [bond_market, key_rate, inflation]
+  summary: "Заседание ЦБ 11 сентября (ставка сохранена на 14,0%) добавило долговому рынку негатива: доходности ОФЗ выросли."
+ 
+- file: ALFA-Macro_Insights-Policy_Rate_11Sep.pdf
+  title: "Ключевая ставка ЦБ РФ: ставка без изменения на 14,0%, риторика стала жёстче"
+  department: Центр макроэкономического анализа
+  date: 2026-09-11
+  date_approx: false
+  outdated: false
+  topics: [key_rate, inflation]
+  summary: "ЦБ оставил ставку 14,0%, вариант снижения не рассматривал; отмечено ускорение роста цен в устойчивых компонентах до 5–6%."
+ 
+- file: ALFA-7M26.pdf
+  title: "Макростатистика 7М26: данные по рынку труда не подтверждают охлаждения экономики"
+  department: Центр макроэкономического анализа
+  date: 2026-09-07
+  date_approx: false
+  outdated: false
+  topics: [macro_growth, labor_market, consumer_demand, key_rate]
+  summary: "Рынок труда летом 2026 г. оставался сильным (рост зарплат 9,6% г/г в июне), оборот розницы +5,3% г/г в июле."
+ 
+- file: Inflation_tracker_02.pdf
+  title: "Инфляция 25–31 августа: основные выводы"
+  department: Центр макроэкономического анализа
+  date: 2026-09-02
+  date_approx: false
+  outdated: false
+  topics: [inflation, oil_gas]
+  summary: "Росстат зафиксировал недельную дефляцию 0,01% на фоне роста цен на бензин — сигнал дезинфляционных тенденций."
+ 
+- file: Gold_digest_August26.pdf
+  title: "Обзор рынка золота, август 2026"
+  department: Долговой рынок
+  date: 2026-08-31
+  date_approx: true
+  outdated: false
+  topics: [metals, bond_market]
+  summary: "Ежемесячный обзор рынка золота за август 2026 г."
+ 
+- file: ALFA-consumption.pdf
+  title: "Потребление на пике"
+  department: Центр макроэкономического анализа
+  date: 2026-08-05
+  date_approx: false
+  outdated: false
+  topics: [consumer_demand, credit_conditions, macro_growth]
+  summary: "Потребление на пике: в следующие месяцы ожидается охлаждение спроса, к 4К26 — рост потребления около нуля в годовом выражении."
+ 
+- file: ALFA-macro_stat1H26.pdf
+  title: "Макростатистика 1П26: слабый рост сместил прогноз роста ВВП на 0,1% за год"
+  department: Центр макроэкономического анализа
+  date: 2026-07-31
+  date_approx: false
+  outdated: false
+  topics: [macro_growth, inflation]
+  summary: "Рост ВВП за 1П26 составил всего 0,3%, главная причина — слабый рост промпроизводства."
+ 
+- file: FI_Strategy_3Q26_22072026.pdf
+  title: "Стратегия на долговом рынке, 3К26"
+  department: Долговой рынок
+  date: 2026-07-22
+  date_approx: false
+  outdated: false
+  topics: [bond_market, key_rate, inflation, fx_rub]
+  summary: "Квартальная стратегия по рынку облигаций на 3-й квартал 2026 г."
+ 
+- file: ALFA_Russian_Steels_1К21PreviewUpdate_15Apr2021.pdf
+  title: "Российская сталь: ралли цен продолжается; прогноз результатов за 1К21"
+  department: "Рынок акций, металлы и горная добыча"
+  date: 2021-04-15
+  date_approx: false
+  outdated: true
+  topics: [metals]
+  summary: "Прогноз сильных результатов производителей плоского проката за 1К21 на фоне роста цен на сталь (апрель 2021 г.)."
