@@ -1,0 +1,39 @@
+ceo:
+  name: Генеральный директор / собственник
+  default_weight: 0.5
+  top_n: 3
+  weights: {macro_growth: 0.9, consumer_demand: 0.9, key_rate: 0.8, sanctions: 0.8, gov_procurement: 0.8,
+            regulation: 0.7, import_customs: 0.7, fx_rub: 0.7, inflation: 0.7, labor_market: 0.6,
+            construction_materials: 0.6, components_supply: 0.6, real_estate: 0.6, project_finance: 0.6,
+            credit_conditions: 0.6, logistics: 0.6, oil_gas: 0.6, tax_reporting: 0.4, bond_market: 0.3}
+  focus: "Влияние на спрос, затраты и выполнение плана; развилки решений; 3–5 самых значимых событий; горизонт квартал и год."
+  answer_style: "Управленческое последствие и вопрос для обсуждения с командой; без формул и мелких деталей."
+
+cfo:
+  name: Финансовый директор
+  default_weight: 0.5
+  top_n: 3
+  weights: {key_rate: 1.0, credit_conditions: 0.9, inflation: 0.8, fx_rub: 0.8, bond_market: 0.7,
+            tax_reporting: 0.7, project_finance: 0.7, consumer_demand: 0.6, construction_materials: 0.6,
+            components_supply: 0.6, oil_gas: 0.6, import_customs: 0.6, macro_growth: 0.6, sanctions: 0.6,
+            energy_tariffs: 0.5, regulation: 0.4, labor_market: 0.4}
+  focus: "Как изменятся маржа, оборотный капитал и цена финансирования."
+  answer_style: "Связь с финансовыми параметрами, сценарий с формулой, недостающие входные данные и ограничения расчёта."
+
+treasurer:
+  name: Руководитель казначейства
+  default_weight: 0.3
+  top_n: 3
+  weights: {key_rate: 1.0, fx_rub: 1.0, credit_conditions: 0.8, sanctions: 0.8, bond_market: 0.7,
+            inflation: 0.5, import_customs: 0.5, tax_reporting: 0.4}
+  focus: "Платежи, ликвидность, валюта и сроки долга; события денежного рынка и расчётов."
+  answer_style: "Влияние на известные инструменты (кредит, депозит, гарантии); запрос графика платежей для точного расчёта."
+
+accountant:
+  name: Главный бухгалтер
+  default_weight: 0.2
+  top_n: 3
+  weights: {tax_reporting: 1.0, regulation: 0.9, import_customs: 0.6, labor_market: 0.4, sanctions: 0.4,
+            fx_rub: 0.3, key_rate: 0.2}
+  focus: "Отличить действующее изменение от обсуждения и понять применимость к своей компании."
+  answer_style: "Статус нормы, дата вступления в силу, условия применимости, первоисточник и список проверок учёта."

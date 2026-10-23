@@ -1,0 +1,89 @@
+fields:
+  has_loa:
+    reason: "у компании есть кредит"
+    topics:
+      key_rate: {weight: 0.9, kind: risk}
+      credit_conditions: {weight: 0.8, kind: risk}
+      bond_market: {weight: 0.3, kind: neutral}
+    limits: "Флаг не показывает сумму, тип ставки (фиксированная или плавающая) и даты пересмотра. Нельзя утверждать, что расходы уже выросли; эффект в рублях — только через калькулятор с данными пользователя."
+
+  has_lea:
+    reason: "у компании есть лизинг"
+    topics:
+      key_rate: {weight: 0.6, kind: risk}
+      credit_conditions: {weight: 0.6, kind: risk}
+      auto_market: {weight: 0.3, kind: neutral}
+    limits: "Предмет лизинга неизвестен."
+
+  has_gar:
+    reason: "у компании есть банковская гарантия"
+    topics:
+      gov_procurement: {weight: 0.6, kind: opportunity}
+      credit_conditions: {weight: 0.4, kind: risk}
+      project_finance: {weight: 0.3, kind: neutral}
+    limits: "Не известно, под какие контракты выдана гарантия."
+
+  has_dep:
+    reason: "у компании есть депозит"
+    topics:
+      key_rate: {weight: 0.6, kind: opportunity}
+      bond_market: {weight: 0.3, kind: neutral}
+    limits: "Сумма и срок депозита неизвестны."
+
+  has_factoring:
+    reason: "компания пользуется факторингом"
+    topics:
+      key_rate: {weight: 0.5, kind: risk}
+      credit_conditions: {weight: 0.5, kind: risk}
+      consumer_demand: {weight: 0.3, kind: neutral}
+    limits: "Покупатели по факторингу неизвестны."
+
+  has_zpp:
+    reason: "у компании зарплатный проект"
+    topics:
+      labor_market: {weight: 0.5, kind: risk}
+      tax_reporting: {weight: 0.3, kind: neutral}
+    limits: "Численность и регионы сотрудников неизвестны."
+
+  has_rko:
+    reason: "у компании расчётный счёт в банке"
+    topics:
+      sanctions: {weight: 0.2, kind: risk}
+      tax_reporting: {weight: 0.2, kind: neutral}
+    limits: "Есть почти у всех клиентов — слабый признак, не использовать как единственную причину показа."
+
+  fts_flag:
+    reason: "у компании есть сведения ФТС (внешнеторговые операции)"
+    topics:
+      fx_rub: {weight: 0.8, kind: neutral}
+      import_customs: {weight: 0.8, kind: risk}
+      sanctions: {weight: 0.6, kind: risk}
+      logistics: {weight: 0.5, kind: risk}
+    limits: "Нельзя утверждать, что компания экспортирует или импортирует: направление, товары и валюта контрактов неизвестны. Курс — neutral, пока направление не подтвердит пользователь."
+
+
+ignored:
+  negative_mark: "Описание в кейсе связано с собственником и требует пояснения — не использовать как риск."
+  revenue_is_stub: "Выручка-заглушка (1000) — не делать выводов о масштабе; показать в пробелах профиля."
+  cl_type: "Используется только для отбора: CLOSE_CLIENT и PROSPECT не считаются действующими клиентами."
+
+
+countries:
+  Китай: {fx_rub: 0.9, import_customs: 0.7, sanctions: 0.5, logistics: 0.5}
+  Турция: {fx_rub: 0.6, import_customs: 0.6, sanctions: 0.6}
+  Казахстан: {import_customs: 0.5, logistics: 0.5}
+  Киргизия: {import_customs: 0.5, logistics: 0.5}
+  default: {fx_rub: 0.6, import_customs: 0.5, sanctions: 0.5}
+
+
+payments:
+  top_payer_share:
+    threshold: 0.5
+    reason: "больше половины поступлений приходит от одного плательщика"
+    topics: {macro_growth: 0.3, gov_procurement: 0.3}
+    limits: "Повод уточнить график поступлений, а не основание назвать контрагента ненадёжным. В платежах нет дат, валюты и назначения — не строить календарный прогноз."
+  top_payee_share:
+    threshold: 0.5
+    reason: "больше половины платежей уходит одному получателю"
+    topics: {components_supply: 0.3, construction_materials: 0.3}
+    limits: "Не называть получателя поставщиком: назначение платежа неизвестно."

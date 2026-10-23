@@ -1,0 +1,141 @@
+- id: cbr_news
+  name: Банк России — новости
+  type: rss
+  url: https://www.cbr.ru/rss/RssNews
+  weight: 1.0
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [cfo, treasurer, ceo]
+  note: "Ставка, денежный рынок, разъяснения."
+
+- id: cbr_events
+  name: Банк России — события и решения
+  type: rss
+  url: https://www.cbr.ru/rss/eventrss
+  weight: 1.0
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [cfo, treasurer]
+  note: "Решения совета директоров, пресс-релизы."
+
+
+- id: kommersant_economics
+  name: Коммерсантъ — Экономика
+  type: rss
+  url: https://www.kommersant.ru/RSS/section-economics.xml
+  weight: 0.7
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [ceo, cfo, accountant]
+  industries: ["46", "41", "42", "27"]
+  note: "Налоги, инфляция, кредитование, бюджет, регулирование."
+
+- id: kommersant_business
+  name: Коммерсантъ — Бизнес
+  type: rss
+  url: https://www.kommersant.ru/RSS/section-business.xml
+  weight: 0.7
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [ceo, cfo]
+  industries: ["46", "41", "42", "27"]
+  note: "Топливо и АЗС, промышленность, девелопмент, компании. Новость о конкретной компании не переносить на всю отрасль."
+
+- id: kommersant_market
+  name: Коммерсантъ — Потребительский рынок
+  type: rss
+  url: https://www.kommersant.ru/RSS/section-market.xml
+  weight: 0.6
+  priority: P0
+  enabled: false
+  checked: true
+  audience: [ceo]
+  industries: ["46", "47"]
+  note: "Оптовая и розничная торговля, спрос, импорт товаров."
+
+- id: interfax_economy
+  name: Интерфакс — Экономика
+  type: rss
+  url: https://www.interfax.ru/rss
+  weight: 0.7
+  priority: P0
+  enabled: true
+  checked: true
+  include_categories: [Экономика]
+  audience: [ceo, cfo, treasurer]
+  industries: ["46", "41", "42", "27"]
+  note: "Общая лента, берём только рубрику «Экономика»."
+
+- id: prime
+  name: ПРАЙМ — экономические новости
+  type: rss
+  url: https://1prime.ru/export/rss2/index.xml
+  weight: 0.6
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [cfo, treasurer]
+  industries: ["46", "27"]
+  note: "Экономическое агентство: ставки банков, утильсбор, энергетика, рынки. Много мировых рынков — отсеет разметка."
+
+- id: rbc_business
+  name: РБК — Экономика, бизнес, финансы
+  type: rss
+  url: https://rssexport.rbc.ru/rbcnews/news/30/full.rss
+  weight: 0.6
+  priority: P1
+  enabled: false   
+  checked: true
+  include_categories: [Экономика, Бизнес, Финансы]
+  audience: [ceo, cfo]
+  note: "В ленте 30 последних записей всех рубрик."
+
+
+- id: kommersant_novosibirsk
+  name: Коммерсантъ — Новосибирск
+  type: rss
+  url: https://www.kommersant.ru/rss/regions/novosibirsk_all.xml
+  weight: 0.5
+  priority: P1
+  enabled: false   
+  checked: true
+  audience: [ceo]
+  note: "Региональные новости; Иркутской области (U_9250) в списке Коммерсанта нет."
+
+
+
+- id: moex_main
+  name: Московская биржа — главные новости
+  type: rss
+  url: https://www.moex.com/export/news.aspx?cat=101
+  weight: 0.5
+  priority: P1
+  enabled: false
+  checked: true
+  audience: [treasurer]
+  note: "Выключено 22.10.2026: почти все записи — служебные сообщения о торгах."
+  exclude:
+    - депозитный аукцион
+    - о начале торгов
+    - список ценных бумаг
+    - допущенных к торгам
+    - регистрации выпуска
+    - итоги выпуска
+    - повышенного инвестиционного риска
+    - риск-параметр
+    - несостоявш
+    - приостановк
+    - возобновлени
+    - о порядке приобретения
+    - о порядке сбора заявок
+    - ценового коридора
+    - дестабилизации цен
+    - дискретный аукцион
+    - репо
+    - цена исполнения
+    - цены исполнения
+
