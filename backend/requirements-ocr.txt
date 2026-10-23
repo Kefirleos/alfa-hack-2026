@@ -1,0 +1,4 @@
+# Только для ml/alfa_ocr.py (разовая подготовка данных)
+pillow==13.0.0
+pymupdf==2.0
+pytesseract==0.3.13
