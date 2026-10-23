@@ -38,7 +38,16 @@ CREATE TABLE IF NOT EXISTS companies (
     group_id TEXT,
     city TEXT,
     region TEXT
-)
+);
+CREATE TABLE IF NOT EXISTS payment_edges (
+    payer TEXT NOT NULL,        -- PAYER: кто платит
+    receiver TEXT NOT NULL,     -- BENEFICIARY: кому платят
+    amount REAL NOT NULL,       -- PAY_AMT, сумма всех платежей этой пары
+    cnt INTEGER NOT NULL,       -- PAY_CNT, число платежей
+    PRIMARY KEY (payer, receiver)
+);
+CREATE INDEX IF NOT EXISTS idx_edges_payer ON payment_edges(payer);
+CREATE INDEX IF NOT EXISTS idx_edges_receiver ON payment_edges(receiver);
 """
 
 
