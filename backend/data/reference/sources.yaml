@@ -51,7 +51,7 @@
   url: https://www.kommersant.ru/RSS/section-market.xml
   weight: 0.6
   priority: P0
-  enabled: true
+  enabled: false
   checked: true
   audience: [ceo]
   industries: ["46", "47"]
