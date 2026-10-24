@@ -8,6 +8,7 @@ from app.schemas import Claim, ClaimType, Event, InsightCard, Source, TraceStep
 from app.scoring import load_events
 from ml import llm_client
 from ml.agent.tools import PRODUCT_NAMES, run_tool, _load_yaml
+from ml.agent.checks import rule_check
 
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 MAX_TOOL_CALLS = 8
@@ -96,6 +97,10 @@ def gather(company_id:str, event: dict, role: str) -> dict:
     bank = _call(state, "Поиск позиции банка", "search_alfa_analytics", {"query": query, "topics": topics})
     if not bank.get("items"):
         bank = _call(state, "Повторный поиск позиции банка", "search_alfa_analytics", {"query": _topic_names(topics)})
+
+    if "key_rate" in topics:
+        _call(state, "Поиск прогноза банка по ставке", "search_alfa_analytics",
+              {"query": "прогноз ключевой ставки на конец года"})
 
     _call(state, "Похожие события", "search_related_news",
         {"topics": topics, "industries": [okved_div] if okved_div else [],
@@ -186,12 +191,57 @@ def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
         uncertainty=draft.uncertainty or None,
     )
 
+def _drop_invalid(draft: InsightDraft, state: dict) -> int:
+    known = state["refs"]
+    required = {"fact": "news:", "bank_view": "alfa:", "ad": "product:"}
+    dropped = 0
+    for part in PARTS:
+        kept = []
+        for claim in getattr(draft, part):
+            claim.refs = [ref for ref in claim.refs if ref in known]
+            prefix = required.get(claim.type)
+            if prefix and not any(ref.startswith(prefix) for ref in claim.refs):
+                dropped += 1
+                continue
+            kept.append(claim)
+        setattr(draft, part, kept)
+    return dropped
+
+def run_insight(company_id: str, event_id: str, role: str, relevance: float = 0.0) -> tuple[InsightCard, list[TraceStep]]:
+    event = find_event(event_id)
+    if event is None:
+        raise ValueError(f"событие {event_id} не найдено")
+
+    state = gather(company_id, event, role)
+    draft = generate(state, company_id, event, role)
+
+    issues = rule_check(draft, state)
+    _add_step(state, "Самопроверка", "замечаний нет" if not issues else f"замечаний: {len(issues)}")
+
+    time_left = time.time() - state["started"] < TIME_LIMIT
+    if issues and state["generations"] < MAX_GENERATIONS and time_left:
+        draft = generate(state, company_id, event, role, feedback="\n".join(issues))
+        issues = rule_check(draft, state)
+        _add_step(state, "Повторная самопроверка", "замечаний нет" if not issues else f"замечаний: {len(issues)}")
+
+    if issues:
+        dropped = _drop_invalid(draft, state)
+        if dropped:
+            draft.uncertainty = (draft.uncertainty + f" Снято утверждений без подтверждения: {dropped}.").strip()
+            _add_step(state, "Снятие неподтверждённого", f"снято: {dropped}")
+
+    card = resolve(draft, state, company_id, f"{company_id}__{event_id}__{role}", event, relevance)
+    seconds = round(time.time() - state["started"], 1)
+    _add_step(state, "Готово", f"инструментов: {state['calls']}, генераций: {state['generations']}, {seconds} с")
+    return card, state["trace"]
+
 
 if __name__ == "__main__":
-        event = next(e for e in load_events() if "сохранил ключевую ставку" in e["title"])
-        state = gather("U_9250", event, "cfo")
-        draft = generate(state, "U_9250", event, "cfo")
-        card = resolve(draft, state, "U_9250", f"U_9250__{event['event_id']}__cfo", event, 0.8)
-        print(card.model_dump_json(indent=2))
-        for step in state["trace"]:
-            print(step.step, step.name, "—", step.result)
+    import sys
+    company = sys.argv[1] if len(sys.argv) > 1 else "U_9250"
+    role = sys.argv[2] if len(sys.argv) > 2 else "cfo"
+    event = next(e for e in load_events() if "сохранил ключевую ставку" in e["title"])
+    card, trace = run_insight(company, event["event_id"], role, relevance=0.8)
+    print(card.model_dump_json(indent=2))
+    for step in trace:
+        print(step.step, step.name, step.tool or "", "—", step.result)
