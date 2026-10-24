@@ -33,8 +33,7 @@ def load_events() -> list[dict]:
     path = config.PROCESSED_DIR / "events.jsonl"
     with open(path, encoding="utf-8") as f:
         events = [json.loads(line) for line in f if line.strip()]
-    return [e for e in events if e["topics"] and e.get("published")]
-
+    return [e for e in events if e["topics"] and e.get("published") and "состоится" not in e["title"].lower()]
 
 def _published_date(event: dict) -> date:
     return date.fromisoformat(event["published"][:10])
@@ -151,7 +150,7 @@ def rank_events(profile: dict, role: str, limit: int = 10) -> list[dict]:
 
     result, per_topic, seen_titles = [], {}, set()
     for s in scored:
-        title_key = s["event"]["title"].lower()[:30]  # почти одинаковые заголовки не повторяем
+        title_key = s["event"]["title"].split("//")[-1].strip().lower()[:40] # один сюжет в разных заголовках не повтоярется
         if title_key in seen_titles or per_topic.get(s["topic"], 0) >= MAX_PER_TOPIC:
             continue
         seen_titles.add(title_key)
