@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem, UserRole, LoginRequest, LoginResponse, TraceStep, ChatRequest, ChatAnswer, CustomNewsRequest, CompareResult, FeedBackRequest
+from app.company_profile import get_company_profile
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GenAlpha News Insights API")
@@ -181,3 +182,11 @@ def compare(company_a: str, company_b: str):
 @app.post("/feedback")
 def feedback(data: FeedBackRequest): # пока ниче не сохраняется
     return {"status": "ok"}
+
+
+@app.get("/companies/{company_id}/profile")
+def get_profile(company_id: str):
+    profile = get_company_profile(company_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail=f"Клиент {company_id} не найден")
+    return profile
