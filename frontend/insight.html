@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Альфа-Бизнес — Бизнес-инсайт</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <span class="logo-mark"></span>
+        <span>Альфа-Бизнес</span>
+      </a>
+      <nav>
+        <ul class="nav">
+          <li><a href="index.html">Главная</a></li>
+          <li><a class="active" href="insights.html">Инсайты</a></li>
+          <li><a href="accounts.html">Счета</a></li>
+          <li><a href="payments.html">Платежи</a></li>
+          <li><a href="credits.html">Кредиты</a></li>
+          <li><a href="analytics.html">Аналитика</a></li>
+          <li><a href="compare.html">Сравнение</a></li>
+        </ul>
+      </nav>
+      <div class="header-side">
+        <select id="company-select" title="Компания"></select>
+        <span class="meta" id="user-name">Демо-пользователь</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <div>
+        <a class="card-link" href="insights.html">← К списку инсайтов</a>
+        <h1 class="page-title" style="margin-top: 12px;" id="insight-title">Загрузка...</h1>
+        <div class="meta">
+          <span id="insight-date"></span>
+          <span id="insight-relevance"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-8" style="display: flex; flex-direction: column; gap: 24px;">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Что произошло</div>
+          </div>
+          <div class="block">
+            <ul class="list" id="event-list"></ul>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Почему это важно именно для этой компании</div>
+          </div>
+          <div class="block">
+            <ul class="list" id="why-list"></ul>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Риски и возможности</div>
+          </div>
+          <div class="grid" style="gap: 16px;">
+            <div class="col-6" style="grid-column: 1 / span 6;">
+              <div class="block">
+                <div class="block-title">Риски</div>
+                <ul class="list" id="risks-list"></ul>
+              </div>
+            </div>
+            <div class="col-6" style="grid-column: 7 / span 6;">
+              <div class="block">
+                <div class="block-title">Возможности</div>
+                <ul class="list" id="opp-list"></ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Позиция Альфа-Банка</div>
+          </div>
+          <div class="block">
+            <ul class="list" id="bank-list"></ul>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Какие действия могут быть релевантны</div>
+          </div>
+          <div class="block">
+            <ul class="list" id="actions-list"></ul>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Спросить у ИИ по инсайту</div>
+          </div>
+          <div class="question-box">
+            <div class="footer-note">Задайте уточняющий вопрос — агент учтёт контекст компании и источники</div>
+            <div class="question-input">
+              <input type="text" id="question-input" placeholder="Например: как это повлияет на платежи в краткосрочной перспективе?">
+              <button class="btn" id="question-send">Отправить</button>
+            </div>
+            <div id="chat-answer" class="chat-answer"></div>
+          </div>
+        </section>
+      </div>
+      <div class="col-4" style="display: flex; flex-direction: column; gap: 24px;">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Источники</div>
+          </div>
+          <div class="source-list" id="sources-list"></div>
+        </section>
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">На чём основан вывод</div>
+          </div>
+          <div class="block">
+            <div class="footer-note">Признаки компании, повлиявшие на отбор</div>
+            <ul class="list" id="features-list"></ul>
+            <div class="footer-note" id="uncertainty"></div>
+          </div>
+        </section>
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Как получен вывод</div>
+          </div>
+          <div class="block">
+            <ul class="list" id="trace-list"></ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/insight.js"></script>
+</body>
+</html>

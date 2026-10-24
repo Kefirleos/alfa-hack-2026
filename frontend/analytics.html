@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Альфа-Бизнес — Аналитика</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <span class="logo-mark"></span>
+        <span>Альфа-Бизнес</span>
+      </a>
+      <nav>
+        <ul class="nav">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="insights.html">Инсайты</a></li>
+          <li><a href="accounts.html">Счета</a></li>
+          <li><a href="payments.html">Платежи</a></li>
+          <li><a href="credits.html">Кредиты</a></li>
+          <li><a class="active" href="analytics.html">Аналитика</a></li>
+          <li><a href="compare.html">Сравнение</a></li>
+        </ul>
+      </nav>
+      <div class="header-side">
+        <select id="company-select" title="Компания"></select>
+        <span class="meta" id="user-name">Демо-пользователь</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <div>
+        <h1 class="page-title">Аналитика</h1>
+        <div class="footer-note">Сводка построена на счетах, платежах и кредитах компании</div>
+      </div>
+      <div class="select">
+        <span class="select-label">Базовая валюта</span>
+        <span class="badge" id="base-currency">—</span>
+      </div>
+    </div>
+
+    <section class="stat-grid" id="analytics-stats">
+      <!-- заполняется JS -->
+    </section>
+
+    <div class="grid" style="margin-top: 24px;">
+      <div class="col-6">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Распределение операций</div>
+          </div>
+          <div class="block" id="category-chart"></div>
+        </section>
+      </div>
+      <div class="col-6">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Динамика по месяцам</div>
+          </div>
+          <div class="block" id="month-chart"></div>
+        </section>
+      </div>
+
+      <div class="col-6">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Топ контрагентов</div>
+          </div>
+          <div class="block" id="counterparty-chart"></div>
+        </section>
+      </div>
+      <div class="col-6">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Оценка рисков</div>
+          </div>
+          <div class="block">
+            <div id="risk-badge" style="margin-bottom: 8px;"></div>
+            <ul class="list" id="risk-notes"></ul>
+          </div>
+        </section>
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">Связанные инсайты</div>
+          </div>
+          <div class="block">
+            <div class="footer-note">События, на которые опирается оценка</div>
+            <ul class="list" id="linked-insights"></ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/analytics.js"></script>
+</body>
+</html>
