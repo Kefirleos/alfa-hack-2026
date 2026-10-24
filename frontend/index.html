@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Альфа-Бизнес — Дашборд</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <span class="logo-mark"></span>
+        <span>Альфа-Бизнес</span>
+      </a>
+      <nav>
+        <ul class="nav">
+          <li><a class="active" href="index.html">Главная</a></li>
+          <li><a href="insights.html">Инсайты</a></li>
+          <li><a href="accounts.html">Счета</a></li>
+          <li><a href="payments.html">Платежи</a></li>
+          <li><a href="credits.html">Кредиты</a></li>
+          <li><a href="analytics.html">Аналитика</a></li>
+          <li><a href="compare.html">Сравнение</a></li>
+        </ul>
+      </nav>
+      <div class="header-side">
+        <select id="company-select" title="Компания"></select>
+        <span class="meta" id="user-name">Демо-пользователь</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="page-title">Главная</h1>
+
+    <section class="stat-grid" id="dashboard-stats">
+      <!-- заполняется JS -->
+    </section>
+
+    <div class="grid" style="margin-top: 24px;">
+      <div class="col-8">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Бизнес-инсайты</div>
+              <div class="footer-note">Персонализированные разборы событий для вашей компании</div>
+            </div>
+            <a class="card-link" href="insights.html">Все инсайты →</a>
+          </div>
+          <div class="card-body" id="dashboard-previews">
+            <!-- заполняется JS -->
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Операции</div>
+          </div>
+          <div class="card-body">
+            <a class="insight-preview" href="payments.html">
+              <div class="preview-title">Платежи</div>
+              <div class="preview-sub">Последние операции по счетам</div>
+            </a>
+            <a class="insight-preview" href="accounts.html">
+              <div class="preview-title">Счета</div>
+              <div class="preview-sub">Остатки и обороты</div>
+            </a>
+            <a class="insight-preview" href="credits.html">
+              <div class="preview-title">Кредиты</div>
+              <div class="preview-sub">Лимиты и рекомендации банка</div>
+            </a>
+            <a class="insight-preview" href="analytics.html">
+              <div class="preview-title">Аналитика</div>
+              <div class="preview-sub">Потоки, категории, риски</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

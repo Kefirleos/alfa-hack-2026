@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Альфа-Бизнес — Сравнение компаний</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <span class="logo-mark"></span>
+        <span>Альфа-Бизнес</span>
+      </a>
+      <nav>
+        <ul class="nav">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="insights.html">Инсайты</a></li>
+          <li><a href="accounts.html">Счета</a></li>
+          <li><a href="payments.html">Платежи</a></li>
+          <li><a href="credits.html">Кредиты</a></li>
+          <li><a href="analytics.html">Аналитика</a></li>
+          <li><a class="active" href="compare.html">Сравнение</a></li>
+        </ul>
+      </nav>
+      <div class="header-side">
+        <select id="company-select" title="Компания"></select>
+        <span class="meta" id="user-name">Демо-пользователь</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <div>
+        <h1 class="page-title">Сравнение компаний</h1>
+        <div class="footer-note">Две компании и их ленты инсайтов бок о бок</div>
+      </div>
+      <div class="filter-row">
+        <select id="company-a"></select>
+        <span class="select-label">против</span>
+        <select id="company-b"></select>
+      </div>
+    </div>
+
+    <div class="card" id="compare-summary" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div class="card-title">Ключевые показатели</div>
+      </div>
+      <div class="card-body" id="compare-metrics"></div>
+    </div>
+
+    <div class="grid">
+      <div class="col-6">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title" id="title-a">Компания A</div>
+          </div>
+          <div class="block" id="feed-a"></div>
+        </section>
+      </div>
+      <div class="col-6">
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title" id="title-b">Компания B</div>
+          </div>
+          <div class="block" id="feed-b"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/compare.js"></script>
+</body>
+</html>

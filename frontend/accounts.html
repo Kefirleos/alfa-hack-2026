@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Альфа-Бизнес — Счета</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="logo" href="index.html">
+        <span class="logo-mark"></span>
+        <span>Альфа-Бизнес</span>
+      </a>
+      <nav>
+        <ul class="nav">
+          <li><a href="index.html">Главная</a></li>
+          <li><a href="insights.html">Инсайты</a></li>
+          <li><a class="active" href="accounts.html">Счета</a></li>
+          <li><a href="payments.html">Платежи</a></li>
+          <li><a href="credits.html">Кредиты</a></li>
+          <li><a href="analytics.html">Аналитика</a></li>
+          <li><a href="compare.html">Сравнение</a></li>
+        </ul>
+      </nav>
+      <div class="header-side">
+        <select id="company-select" title="Компания"></select>
+        <span class="meta" id="user-name">Демо-пользователь</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <div>
+        <h1 class="page-title">Счета</h1>
+        <div class="footer-note">Остатки, обороты и статусы счетов компании</div>
+      </div>
+      <a class="card-link" href="payments.html">Все операции →</a>
+    </div>
+
+    <section class="stat-grid" id="accounts-stats">
+      <!-- заполняется JS -->
+    </section>
+
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <div class="card-title">Счета компании</div>
+      </div>
+      <div class="card-body" id="accounts-list">
+        <!-- заполняется JS -->
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/accounts.js"></script>
+</body>
+</html>
