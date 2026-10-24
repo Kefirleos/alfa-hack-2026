@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, CompanyShort, FeedItem, UserRole, LoginRequest, LoginResponse, TraceStep, ChatRequest, ChatAnswer, CustomNewsRequest, CompareResult, FeedBackRequest
 from app.company_profile import get_company_profile
+from app.scoring import get_feed_items
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="GenAlpha News Insights API")
@@ -75,63 +76,29 @@ def get_insight(insight_id: str):
     )
 
 
+DEMO_IDS = ["U_57706", "U_9250", "U_88715"]  # демо-клиенты из demo_companies.yaml
+
+
 @app.get("/companies/demo", response_model=list[CompanyShort])
 def get_demo_companies():
-    # тоже демка, позже здесь будут лежать данные клиентов
-    return [
-        CompanyShort(id="U_demo1", name="Клиент 1", industry="Название отрасли", region="Название региона"),
-        CompanyShort(id="U_demo2", name="Клиент 2", industry="Название отрасли", region="Название региона")
-    ]
+    result = []
+    for number, company_id in enumerate(DEMO_IDS, start=1):
+        profile = get_company_profile(company_id)
+        result.append(CompanyShort(
+            id=company_id,
+            name=f"Клиент {number}",
+            industry=profile["industry"]["okved_name"],
+            region=profile["region"]["region"],
+        ))
+    return result
 
 
 @app.get("/companies/{company_id}/feed", response_model=list[FeedItem])
-def get_feed(company_id: str):
-    # у каждого клиента демки своя лента, для остальных вылезает 404
-    feeds = {
-        "U_demo1": [
-            FeedItem(
-                insight_id="ins_001",
-                title="Заголовок события 1",
-                date="2026-10-20",
-                relevance=0.9,
-                kind=ItemKind.risk,
-                why_for_you=["признак компании 1", "признак компании 2"],
-                source="Название источника"
-            ),
-            FeedItem(
-                insight_id="ins_002",
-                title="Заголовок события 2",
-                date="2026-10-19",
-                relevance=0.3,
-                kind=ItemKind.opportunity,
-                why_for_you=["признак компании 1"],
-                source="Название источника"
-            )
-        ],
-        "U_demo2": [
-            FeedItem(
-                insight_id="ins_002",
-                title="Заголовок события 2",
-                date="2026-10-19",
-                relevance=0.8,
-                kind=ItemKind.opportunity,
-                why_for_you=["признак компании 3"],
-                source="Название источника"
-            ),
-            FeedItem(
-                insight_id="ins_003",
-                title="Заголовок события 3",
-                date="2026-10-18",
-                relevance=0.5,
-                kind=ItemKind.neutral,
-                why_for_you=["признак компании 3", "признак компании 4"],
-                source="Название источника"
-            )
-        ]
-    }
-    if company_id not in feeds:
+def get_feed(company_id: str, role: UserRole = UserRole.ceo, limit: int = 10):
+    items = get_feed_items(company_id, role.value, limit)
+    if items is None:
         raise HTTPException(status_code=404, detail=f"Клиент {company_id} не найден")
-    return feeds[company_id]
+    return items
 
 
 @app.post("/auth/login", response_model=LoginResponse)
@@ -166,7 +133,7 @@ def custom_insight(data: CustomNewsRequest): # возвращаем ту же д
 
 
 @app.get("/compare", response_model=CompareResult)
-def compare(company_a: str, company_b: str):
+def compare(company_a: str, company_b: str, role: UserRole = UserRole.ceo):
     companies = {c.id: c for c in get_demo_companies()}
     for company_id in (company_a, company_b):
         if company_id not in companies:
@@ -174,8 +141,8 @@ def compare(company_a: str, company_b: str):
     return CompareResult(
         company_a=companies[company_a],
         company_b=companies[company_b],
-        feed_a=get_feed(company_a),
-        feed_b=get_feed(company_b)
+        feed_a=get_feed(company_a, role),
+        feed_b=get_feed(company_b, role)
     )
 
 
