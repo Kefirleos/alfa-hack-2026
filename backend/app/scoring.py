@@ -146,8 +146,7 @@ def rank_events(profile: dict, role: str, limit: int = 10) -> list[dict]:
     ref_date = max(_published_date(e) for e in events)  # «сегодня» = дата самой свежей новости
     signals = company_signals(profile)
     scored = [s for e in events if (s := score_event(profile, signals, role, e, ref_date))]
-    scored.sort(key=lambda s: s["score"], reverse=True)
-
+    scored.sort(key=lambda s: (-round(s["score"], 3), s["event"]["published"]))
     result, per_topic, seen_titles = [], {}, set()
     for s in scored:
         title_key = s["event"]["title"].split("//")[-1].strip().lower()[:40] # один сюжет в разных заголовках не повтоярется
