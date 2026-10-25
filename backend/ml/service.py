@@ -7,6 +7,7 @@ from ml import custom_news, insight_store
 from ml.agent import chat
 from ml.agent.loop import find_event, run_insight
 
+
 class NotFound(LookupError):
     ""
 
@@ -18,7 +19,6 @@ class CompanyNotFound(NotFound):
 class EventNotFound(NotFound):
     ""
 
-
 def make_insight_id(company_id: str, event_id: str, role: UserRole | str) -> str:
     role_value = role.value if isinstance(role, UserRole) else role
     return f"{company_id}__{event_id}__{role_value}"
@@ -27,12 +27,12 @@ def make_insight_id(company_id: str, event_id: str, role: UserRole | str) -> str
 def parse_insight_id(insight_id: str) -> tuple[str, str, UserRole]:
     parts = insight_id.split("__")
     if len(parts) != 3:
-        raise ValueError(f"insight_id должен иметь вид company__event__role, получено {insight_id!r}")
+        raise ValueError("insight_id должен иметь вид company__event__role")
     company_id, event_id, role_value = parts
     try:
         role = UserRole(role_value)
     except ValueError:
-        raise ValueError(f"Неизвестная роль {role_value!r} в insight_id") from None
+        raise ValueError(f"Неизвестная роль {role_value!r}") from None
     return company_id, event_id, role
 
 
@@ -50,6 +50,7 @@ def _relevance(profile: dict, event: dict, role: str) -> float:
     scored = score_event(profile, company_signals(profile), role, event, ref_date)
     return round(scored["score"], 3) if scored else 0.0
 
+
 def _insight_with_trace(insight_id: str) -> tuple[InsightCard, list[TraceStep]]:
     company_id, event_id, role = parse_insight_id(insight_id)
     profile = _check_company(company_id)
@@ -66,6 +67,7 @@ def _insight_with_trace(insight_id: str) -> tuple[InsightCard, list[TraceStep]]:
     insight_store.save(insight_id, card, trace, context=context)
     return card, trace
 
+
 def get_insight(insight_id: str) -> InsightCard:
     card, _ = _insight_with_trace(insight_id)
     return card
@@ -75,11 +77,11 @@ def get_trace(insight_id: str) -> list[TraceStep]:
     _, trace = _insight_with_trace(insight_id)
     return trace
 
-
+  
 def answer_question(insight_id: str, message: str, demo: bool = False) -> ChatAnswer:
     if not message or not message.strip():
         raise ValueError("Пустой вопрос")
-    card, _ = _insight_with_trace(insight_id)
+    card, _ = _insight_with_trace(insight_id) 
     cached = insight_store.get_chat(insight_id, message)
     if cached and not demo:
         return cached
@@ -91,8 +93,11 @@ def answer_question(insight_id: str, message: str, demo: bool = False) -> ChatAn
     answer = chat.answer(card, context, find_event(event_id), role.value, message)
     insight_store.save_chat(insight_id, message, answer, demo=demo)
     return answer
+  
 
-def custom_insight(company_id: str, role: UserRole, text: str | None = None, url: str | None = None) -> InsightCard:
+def custom_insight(company_id: str, role: UserRole | str, text: str | None = None,
+                   url: str | None = None) -> InsightCard:
+    """Своя новость: текст или ссылка -> событие с разметкой -> обычный разбор."""
     if not (text and text.strip()) and not (url and url.strip()):
         raise ValueError("Нужен text или url")
     _check_company(company_id)

@@ -74,7 +74,8 @@ def company_signals(profile: dict) -> dict:
                 add(topic, weight, None, "внешняя торговля со странами: " + ", ".join(names))
 
     # отрасль
-    section = okved["sections"].get(profile["industry"]["okved_div"], okved["default"])
+    # точный код ОКВЭД важнее раздела: у оптовиков топливом свои темы
+    section = okved.get("codes", {}).get(profile["industry"]["okved_code"]) or okved["sections"].get(profile["industry"]["okved_div"], okved["default"])
     for topic, weight in section["topics"].items():
         add(topic, weight, None, f"отрасль: {section['name'].lower()}")
 

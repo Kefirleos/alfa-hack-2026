@@ -122,7 +122,16 @@ function claimTypeRu(type) {
 /* ---------------------------------------------------------- компания --- */
 
 function getActiveCompanyId() {
-  return localStorage.getItem(COMPANY_KEY) || "U_demo1";
+  return localStorage.getItem(COMPANY_KEY) || "U_57706";
+}
+
+/* Роль берём из входа (по умолчанию фин. директор): от неё зависит лента. */
+function getRole() {
+  try {
+    return JSON.parse(localStorage.getItem(USER_KEY) || "{}").role || "cfo";
+  } catch (e) {
+    return "cfo";
+  }
 }
 
 function setActiveCompanyId(id) {
@@ -142,6 +151,11 @@ async function initChrome(onCompanyChange) {
 
   try {
     const companies = await getCompanies();
+    if (companies.length && !companies.some((c) => c.id === current)) {
+    setActiveCompanyId(companies[0].id);
+    location.reload();
+    return;
+    }
     if (select) {
       select.innerHTML = "";
       companies.forEach((company) => {
