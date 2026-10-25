@@ -1,0 +1,69 @@
+- id: deposit
+  name: Депозит для бизнеса
+  when: "Есть свободные остатки, а ставки высокие или ожидается их снижение — можно зафиксировать доходность."
+  topics: [key_rate, bond_market, inflation]
+  field: has_dep
+  not_for: "Нет признаков свободной ликвидности; событие про рост расходов компании."
+
+- id: working_capital_loan
+  name: Кредит на пополнение оборотных средств
+  when: "Нужно профинансировать закупки или запасы: рост цен поставщиков, удлинение отсрочек, сезонный спрос."
+  topics: [credit_conditions, inflation, oil_gas, construction_materials, components_supply, consumer_demand]
+  field: has_loa
+  not_for: "Ставки растут, а у компании уже есть кредит — уместнее обсудить условия действующего."
+
+- id: overdraft
+  name: Овердрафт
+  when: "Кратковременные кассовые разрывы: задержка поступлений, концентрация на одном плательщике."
+  topics: [credit_conditions, logistics, sanctions]
+  field: null
+  not_for: "Долгосрочные вложения и проекты."
+
+- id: leasing
+  name: Лизинг оборудования и транспорта
+  when: "Обновление оборудования или транспорта без единовременной нагрузки на оборотные средства."
+  topics: [components_supply, logistics, import_customs, credit_conditions]
+  field: has_lea
+  not_for: "Событие не связано с основными средствами компании."
+
+- id: bank_guarantee
+  name: Банковские гарантии
+  when: "Участие в госзакупках и крупных контрактах, обеспечение авансов и исполнения обязательств."
+  topics: [gov_procurement, project_finance, regulation]
+  field: has_gar
+  not_for: "Компания не участвует в тендерах и не работает по крупным контрактам."
+
+- id: factoring
+  name: Факторинг
+  when: "Отсрочки платежа покупателям растут, деньги заморожены в дебиторской задолженности."
+  topics: [consumer_demand, credit_conditions, key_rate]
+  field: has_factoring
+  not_for: "Расчёты с покупателями по предоплате."
+
+- id: fx_control
+  name: Валютный контроль и расчёты по ВЭД
+  when: "Внешнеторговые операции: изменения валютного регулирования, расчётов с партнёрами, санкционные ограничения платежей."
+  topics: [fx_rub, sanctions, import_customs]
+  field: null
+  not_for: "Нет сведений ФТС; направление и валюта операций неизвестны — сначала уточнить."
+
+- id: fx_conversion
+  name: Конвертация и инструменты управления валютным риском
+  when: "Курс рубля заметно меняется, а у компании есть расчёты в валюте."
+  topics: [fx_rub]
+  field: null
+  not_for: "Валюта контрактов неизвестна — без уточнения не утверждать, что риск есть."
+
+- id: salary_project
+  name: Зарплатный проект
+  when: "Изменения на рынке труда и в трудовом регулировании, рост фонда оплаты труда."
+  topics: [labor_market, tax_reporting]
+  field: has_zpp
+  not_for: "Событие не касается персонала."
+
+- id: cash_management
+  name: Расчётный счёт и управление ликвидностью
+  when: "Нужно оперативно видеть остатки и платежи по компаниям группы, ускорить расчёты."
+  topics: [credit_conditions, key_rate, sanctions]
+  field: has_rko
+  not_for: "Почти у всех клиентов уже есть — предлагать только как управление ликвидностью группы."

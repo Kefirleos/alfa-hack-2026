@@ -3,6 +3,15 @@ default:
   topics: {key_rate: 0.6, inflation: 0.5, macro_growth: 0.4, credit_conditions: 0.4, tax_reporting: 0.3}
   signals: "Стоимость денег, инфляция, общая деловая активность."
 
+codes:
+  "46.71":
+    name: Оптовая торговля топливом
+    topics: {oil_gas: 0.95, fx_rub: 0.6, import_customs: 0.6, logistics: 0.6, key_rate: 0.6,
+             credit_conditions: 0.5, sanctions: 0.5, regulation: 0.5, tax_reporting: 0.4}
+    signals: "Цены на нефть и топливо, демпфер, экспортные пошлины, биржевые цены, логистика поставок."
+    actions: "Проверить закупочные цены и маржу на тонну, условия поставок и доступную ликвидность."
+    caution: "Розничные цены на АЗС и оптовые — разные рынки; не переносить одно на другое без оговорки."
+
 sections:
   "46":
     name: Оптовая торговля

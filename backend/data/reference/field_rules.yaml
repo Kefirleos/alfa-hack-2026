@@ -12,7 +12,6 @@ fields:
     topics:
       key_rate: {weight: 0.6, kind: risk}
       credit_conditions: {weight: 0.6, kind: risk}
-      auto_market: {weight: 0.3, kind: neutral}
     limits: "Предмет лизинга неизвестен."
 
   has_gar:
@@ -55,10 +54,10 @@ fields:
   fts_flag:
     reason: "у компании есть сведения ФТС (внешнеторговые операции)"
     topics:
-      fx_rub: {weight: 0.8, kind: neutral}
-      import_customs: {weight: 0.8, kind: risk}
-      sanctions: {weight: 0.6, kind: risk}
-      logistics: {weight: 0.5, kind: risk}
+      fx_rub: {weight: 0.6, kind: neutral}
+      import_customs: {weight: 0.5, kind: risk}
+      sanctions: {weight: 0.3, kind: risk}
+      logistics: {weight: 0.3, kind: risk}
     limits: "Нельзя утверждать, что компания экспортирует или импортирует: направление, товары и валюта контрактов неизвестны. Курс — neutral, пока направление не подтвердит пользователь."
 
 
@@ -69,11 +68,11 @@ ignored:
 
 
 countries:
-  Китай: {fx_rub: 0.9, import_customs: 0.7, sanctions: 0.5, logistics: 0.5}
-  Турция: {fx_rub: 0.6, import_customs: 0.6, sanctions: 0.6}
+  Китай: {fx_rub: 0.8, import_customs: 0.6, sanctions: 0.3, logistics: 0.4}
+  Турция: {fx_rub: 0.6, import_customs: 0.5, sanctions: 0.4}
   Казахстан: {import_customs: 0.5, logistics: 0.5}
   Киргизия: {import_customs: 0.5, logistics: 0.5}
-  default: {fx_rub: 0.6, import_customs: 0.5, sanctions: 0.5}
+  default: {fx_rub: 0.5, import_customs: 0.4, sanctions: 0.3}
 
 
 payments:
