@@ -11,7 +11,9 @@ from ml import config
 # коэффициенты: насколько событие данного статуса важно
 STATUS_FACTOR = {"decided": 1.0, "proposed": 0.85, "other": 0.7, "data": 0.55}
 MAX_PER_TOPIC = 2  # не больше двух событий одной темы в ленте, чтобы лента была разнообразной
-
+BROAD_TOPICS = {"key_rate", "inflation", "fx_rub", "credit_conditions", "tax_reporting"}
+NARROW_NO_INDUSTRY = 0.6
+MIN_SCORE = 0.3
 
 def _load_yaml(name: str):
     with open(config.REFERENCE_DIR / name, encoding="utf-8") as f:
@@ -120,7 +122,7 @@ def score_event(profile: dict, signals: dict, role: str, event: dict, ref_date: 
     if industries:
         industry = 1.25 if profile["industry"]["okved_div"] in industries else 0.7
     else:
-        industry = 1.0
+        industry = 1.0 if topic in BROAD_TOPICS else NARROW_NO_INDUSTRY
     # новость называет страны, с которыми торгует клиент: она ближе к нему
     own_countries = {c.capitalize() for c in profile["foreign_trade"]["countries"]}
     country = 1.3 if own_countries & set(event.get("countries") or []) else 1.0
@@ -148,12 +150,16 @@ def rank_events(profile: dict, role: str, limit: int = 10) -> list[dict]:
     signals = company_signals(profile)
     scored = [s for e in events if (s := score_event(profile, signals, role, e, ref_date))]
     scored.sort(key=lambda s: (-round(s["score"], 3), s["event"]["published"]))
-    result, per_topic, seen_titles = [], {}, set()
+    result, per_topic, seen_titles, seen_topic_days = [], {}, set(), set()
     for s in scored:
+        if s["score"] < MIN_SCORE:
+            break  # список отсортирован: дальше только ниже порога
         title_key = s["event"]["title"].split("//")[-1].strip().lower()[:40] # один сюжет в разных заголовках не повтоярется
-        if title_key in seen_titles or per_topic.get(s["topic"], 0) >= MAX_PER_TOPIC:
+        topic_day = (s["topic"], s["event"]["published"][:10])
+        if title_key in seen_titles or topic_day in seen_topic_days or per_topic.get(s["topic"], 0) >= MAX_PER_TOPIC:
             continue
         seen_titles.add(title_key)
+        seen_topic_days.add(topic_day)
         per_topic[s["topic"]] = per_topic.get(s["topic"], 0) + 1
         result.append(s)
         if len(result) >= limit:

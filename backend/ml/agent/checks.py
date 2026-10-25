@@ -15,9 +15,22 @@ FORBIDDEN = [
      "нельзя делать вывод о надёжности контрагента"),
 ]
 
+# о контрактах компании данных нет: выводы о них запрещены
+CONTRACT_RE = re.compile(r"контракт", re.IGNORECASE)
+
 
 def _has_prefix(refs: list[str], prefix: str) -> bool:
     return any(ref.startswith(prefix) for ref in refs)
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"[–—−]", "-", text).replace(",", ".")
+
+
+def _number_in(number: str, report: str) -> bool:
+    if number.endswith(".0"):
+        number = number[:-2]
+    return bool(re.search(rf"(?<![\d.]){re.escape(number)}(?:\.0)?(?!\d|\.\d)", report))
 
 
 def _report_text(state: dict, refs: list[str]) -> str:
@@ -26,7 +39,7 @@ def _report_text(state: dict, refs: list[str]) -> str:
         for item in call["result"].get("items", []):
             if item.get("ref") in refs:
                 parts.append(f"{item.get('title', '')} {item.get('date', '')} {item.get('text', '')}")
-    return " ".join(parts).replace(",", ".")
+    return _norm(" ".join(parts))
 
 
 def claim_problems(claim, state: dict) -> list[str]:
@@ -46,7 +59,7 @@ def claim_problems(claim, state: dict) -> list[str]:
         if any(not ref.startswith("alfa:") for ref in claim.refs):
             problems.append("у позиции банка допустимы только метки alfa:")
         report = _report_text(state, claim.refs)
-        missing = [n for n in NUMBER_RE.findall(claim.text.replace(",", ".")) if n not in report]
+        missing = [n for n in NUMBER_RE.findall(_norm(claim.text)) if not _number_in(n, report)]
         if report and missing:
             problems.append(f"числа {', '.join(missing)} не найдены в отчёте банка")
     if claim.type == "ai_inference" and not _has_prefix(claim.refs, "client:"):
@@ -54,6 +67,8 @@ def claim_problems(claim, state: dict) -> list[str]:
     if claim.type == "ad" and not _has_prefix(claim.refs, "product:"):
         problems.append("продукт не из списка банка")
 
+    if claim.type == "ai_inference" and CONTRACT_RE.search(claim.text):
+        problems.append("о контрактах компании данных нет")
     if claim.type in ("ai_inference", "ad"):
         if MONEY_RE.search(claim.text):
             problems.append("сумма в рублях без данных пользователя")

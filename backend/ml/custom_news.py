@@ -1,8 +1,11 @@
 import hashlib
+import ipaddress
 import json
 import re
+import socket
 import httpx
 from datetime import datetime, timezone
+from urllib.parse import urljoin, urlparse
 
 from ml import config, llm_client
 from ml.news_ingest import HEADERS, _clean_html
@@ -12,18 +15,45 @@ CUSTOM_FILE = config. PROCESSED_DIR.parent / "insights" / "custom_events.jsonl"
 MAX_TEXT = 5000
 MIN_TEXT = 50
 FETCH_TIMEOUT = 20
+MAX_PAGE_BYTES = 500_000  # больше страницы не читаем
+MAX_REDIRECTS = 3
 
+
+def _check_host(url: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise ValueError("Ссылка должна начинаться с http:// или https://")
+    try:
+        addresses = {info[4][0] for info in socket.getaddrinfo(parsed.hostname, None)}
+    except socket.gaierror:
+        raise ValueError("Не удалось открыть ссылку: сайт не найден") from None
+    if any(not ipaddress.ip_address(address).is_global for address in addresses):
+        raise ValueError("Ссылка ведёт во внутреннюю сеть — такие адреса не открываем")
+
+
+def _download(url: str) -> str:
+    for _ in range(MAX_REDIRECTS + 1):
+        _check_host(url)
+        with httpx.stream("GET", url, headers=HEADERS, timeout=FETCH_TIMEOUT, follow_redirects=False) as resp:
+            if resp.is_redirect:
+                url = urljoin(url, resp.headers.get("location", ""))
+                continue
+            resp.raise_for_status()
+            chunks, size = [], 0
+            for chunk in resp.iter_bytes():
+                chunks.append(chunk)
+                size += len(chunk)
+                if size >= MAX_PAGE_BYTES:
+                    break
+            return b"".join(chunks).decode(resp.encoding or "utf-8", errors="replace")
+    raise ValueError("Не удалось открыть ссылку: слишком много перенаправлений")
 
 def _fetch_page(url: str) -> tuple[str, str]:
-    if not url.startswith(("http://", "https://")):
-        raise ValueError("Ccылка должна начинаться с http:// или https://")
     try:
-        resp = httpx.get(url, headers=HEADERS, timeout=FETCH_TIMEOUT, follow_redirects=True)
-        resp.raise_for_status()
+        page = _download(url)
     except httpx.HTTPError as error:
         raise ValueError(f"Не удалось открыть ссылку: {error}") from None
 
-    page = resp.text
     title_match = re.search(r"<title[^>]*>(.*?)</title>", page, re.IGNORECASE | re.DOTALL)
     title = _clean_html(title_match.group(1)) if title_match else ""
     page = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", " ", page, flags=re.IGNORECASE | re.DOTALL)
@@ -83,7 +113,7 @@ def make_event(text: str | None = None, url: str | None = None) -> dict:
     try:
         tags = llm_tags([record], build_system_prompt(topics), topics, topic_ids)[event_id]
         tagged_by = "llm"
-    except llm_client.LLMError:
+    except (llm_client.LLMError, ValueError):
         tags = keyword_tags(record, topics)
         tagged_by = "keywords"
     if not tags.topics:
