@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from app.schemas import Claim, ClaimType, Event, InsightCard, Source, TraceStep
 from app.scoring import load_events
-from ml import llm_client
+from ml import llm_client, custom_news
 from ml.agent.tools import PRODUCT_NAMES, run_tool, _load_yaml
 from ml.agent.checks import rule_check
 
@@ -40,11 +40,10 @@ def _prompt(name:str) -> str:
 
 
 def find_event(event_id) -> dict | None:
-    events = load_events()
-    for event in events:
+    for event in load_events():
         if event["event_id"] == event_id:
             return event
-    return None
+    return custom_news.find(event_id)
 
 
 def fill(template: str, values: dict) -> str:

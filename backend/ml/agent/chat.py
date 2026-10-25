@@ -46,7 +46,7 @@ def _generate(message: str, card: InsightCard, state: dict, role: str,
     ]
     if feedback:
         messages.append({"role": "user", "content": "Исправь ответ с учётом замечаний:\n" + feedback})
-    return llm_client.chat_json(AGENT_ROLE, messages, ChatDraft, max_tokens=2000, temperature=0.2)
+    return llm_client.chat_json(AGENT_ROLE, messages, ChatDraft, max_tokens=4000, temperature=0.2)
 
 
 def answer(card: InsightCard, context: dict, event: dict, role: str, message: str) -> ChatAnswer:
@@ -57,8 +57,11 @@ def answer(card: InsightCard, context: dict, event: dict, role: str, message: st
     draft = _generate(message, card, state, role)
     issues = check_claims(draft.answer, "answer", state)
     if issues:
-        draft = _generate(message, card, state, role, feedback="\n".join(issues))
-
+        try:
+            draft = _generate(message, card, state, role, feedback="\n".join(issues))
+        except llm_client.LLMError:
+            pass 
+        
     checked = [claim for claim in draft.answer if not check_claims([claim], "answer", state)]
 
     to_claim = claim_converter(state, event)
