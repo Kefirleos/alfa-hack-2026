@@ -108,7 +108,7 @@ def chat(
     tools: list[dict] | None = None,
     json_mode: bool = False,
     temperature: float = 0.2,
-    max_tokens: int | None = 150,
+    max_tokens: int | None = 2000,
     use_cache: bool = True) -> dict:
 
     model = model_for(role)
