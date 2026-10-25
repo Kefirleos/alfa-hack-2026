@@ -3,13 +3,21 @@ from datetime import date
 from app.company_profile import get_company_profile
 from app.schemas import ChatAnswer, InsightCard, TraceStep, UserRole
 from app.scoring import company_signals, load_events, score_event
-from ml import insight_store, custom_news
+from ml import custom_news, insight_store
 from ml.agent import chat
 from ml.agent.loop import find_event, run_insight
 
-
-class CompanyNotFound(LookupError):
+class NotFound(LookupError):
     ""
+
+
+class CompanyNotFound(NotFound):
+    ""
+
+
+class EventNotFound(NotFound):
+    ""
+
 
 def make_insight_id(company_id: str, event_id: str, role: UserRole | str) -> str:
     role_value = role.value if isinstance(role, UserRole) else role
@@ -43,20 +51,20 @@ def _relevance(profile: dict, event: dict, role: str) -> float:
     return round(scored["score"], 3) if scored else 0.0
 
 def _insight_with_trace(insight_id: str) -> tuple[InsightCard, list[TraceStep]]:
-    cached = insight_store.get(insight_id)
-    if cached:
-        return cached
-
     company_id, event_id, role = parse_insight_id(insight_id)
     profile = _check_company(company_id)
     event = find_event(event_id)
     if event is None:
-        raise ValueError(f"Событие {event_id} не найдено")
+        raise EventNotFound(f"Событие {event_id} не найдено")
 
-    card, trace, context = run_insight(company_id, event_id, role.value, relevance=_relevance(profile, event, role.value))
-    insight_store.save(insight_id, card, trace, context)
+    cached = insight_store.get(insight_id)
+    if cached:
+        return cached
+
+    card, trace, context = run_insight(company_id, event_id, role.value,
+                                       relevance=_relevance(profile, event, role.value))
+    insight_store.save(insight_id, card, trace, context=context)
     return card, trace
-
 
 def get_insight(insight_id: str) -> InsightCard:
     card, _ = _insight_with_trace(insight_id)
@@ -68,20 +76,25 @@ def get_trace(insight_id: str) -> list[TraceStep]:
     return trace
 
 
-def answer_question(insight_id: str, message: str) -> ChatAnswer:
+def answer_question(insight_id: str, message: str, demo: bool = False) -> ChatAnswer:
     if not message or not message.strip():
         raise ValueError("Пустой вопрос")
     card, _ = _insight_with_trace(insight_id)
+    cached = insight_store.get_chat(insight_id, message)
+    if cached and not demo:
+        return cached
+
     context = insight_store.get_context(insight_id)
     if context is None:
         raise ValueError("Разбор сохранён без данных для чата: удалите его файл в data/insights и откройте заново")
     _, event_id, role = parse_insight_id(insight_id)
-    return chat.answer(card, context, find_event(event_id), role.value, message)
-
+    answer = chat.answer(card, context, find_event(event_id), role.value, message)
+    insight_store.save_chat(insight_id, message, answer, demo=demo)
+    return answer
 
 def custom_insight(company_id: str, role: UserRole, text: str | None = None, url: str | None = None) -> InsightCard:
     if not (text and text.strip()) and not (url and url.strip()):
         raise ValueError("Нужен text или url")
     _check_company(company_id)
-    event = custom_news.make_event(text = text, url = url)
+    event = custom_news.make_event(text=text, url=url)
     return get_insight(make_insight_id(company_id, event["event_id"], role))
