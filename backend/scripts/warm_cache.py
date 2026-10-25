@@ -24,11 +24,11 @@ def main(roles: list[str]) -> None:
                     continue
                 _, event_id, _ = parse_insight_id(item.insight_id)
                 try:
-                    card, trace = run_insight(company_id, event_id, role, relevance=item.relevance)
+                    card, trace, context = run_insight(company_id, event_id, role, relevance=item.relevance)
                 except Exception as error:
                     print("ошибка", item.insight_id, error)
                     continue
-                insight_store.save(item.insight_id, card, trace, demo=True)
+                insight_store.save(item.insight_id, card, trace, context=context, demo=True)
                 print("готово", item.insight_id)
 
 

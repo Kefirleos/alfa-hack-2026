@@ -21,7 +21,6 @@ def _has_prefix(refs: list[str], prefix: str) -> bool:
 
 
 def _report_text(state: dict, refs: list[str]) -> str:
-    """Тексты, даты и названия отчётов банка, на которые ссылается утверждение."""
     parts = []
     for call in state["results"]:
         for item in call["result"].get("items", []):
@@ -31,7 +30,6 @@ def _report_text(state: dict, refs: list[str]) -> str:
 
 
 def claim_problems(claim, state: dict) -> list[str]:
-    """Что не так с одним утверждением (пустой список, если всё в порядке)."""
     known = state["refs"]
     company_flags = {ref[len("client:"):] for ref in known if ref.startswith("client:")}
     problems = []
@@ -47,7 +45,6 @@ def claim_problems(claim, state: dict) -> list[str]:
             problems.append("позиция банка без ссылки на отчёт")
         if any(not ref.startswith("alfa:") for ref in claim.refs):
             problems.append("у позиции банка допустимы только метки alfa:")
-        # числа из позиции банка должны быть в самом отчёте, иначе банку приписана чужая цифра
         report = _report_text(state, claim.refs)
         missing = [n for n in NUMBER_RE.findall(claim.text.replace(",", ".")) if n not in report]
         if report and missing:
@@ -66,11 +63,17 @@ def claim_problems(claim, state: dict) -> list[str]:
     return problems
 
 
+def check_claims(claims: list, part: str, state: dict) -> list[str]:
+    issues = []
+    for number, claim in enumerate(claims, start=1):
+        issues += [f"{part}[{number}]: {problem}" for problem in claim_problems(claim, state)]
+    return issues
+
+
 def rule_check(draft, state: dict) -> list[str]:
     issues = []
     for part in PARTS:
-        for number, claim in enumerate(getattr(draft, part), start=1):
-            issues += [f"{part}[{number}]: {problem}" for problem in claim_problems(claim, state)]
+        issues += check_claims(getattr(draft, part), part, state)
     if not draft.uncertainty:
         issues.append("uncertainty: не указано, чего не хватает для точного вывода")
     return issues
@@ -79,7 +82,8 @@ def rule_check(draft, state: dict) -> list[str]:
 if __name__ == "__main__":
     from types import SimpleNamespace
 
-    state = {"refs": {"news:a1", "alfa:x.pdf#1", "client:has_loa", "client:fts_flag", "product:deposit"}}
+    state = {"refs": {"news:a1", "alfa:x.pdf#1", "client:has_loa", "client:fts_flag", "product:deposit"},
+             "results": []}
 
     def claim(text, type_, refs):
         return SimpleNamespace(text=text, type=type_, refs=refs)
@@ -95,4 +99,10 @@ if __name__ == "__main__":
         uncertainty="",
     )
     for issue in rule_check(draft, state):
+        print(issue)
+
+    print("--- чат")
+    answer = [claim("Банк ждёт паузу", "bank_view", ["alfa:x.pdf#1"]),
+              claim("Стоит проверить кредит", "ai_inference", [])]
+    for issue in check_claims(answer, "answer", state):
         print(issue)

@@ -6,16 +6,16 @@ from pydantic import BaseModel, Field
 
 from app.schemas import Claim, ClaimType, Event, InsightCard, Source, TraceStep
 from app.scoring import load_events
-from ml import llm_client
+from ml import llm_client, custom_news
 from ml.agent.tools import PRODUCT_NAMES, run_tool, _load_yaml
 from ml.agent.checks import claim_problems, rule_check
 
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 MAX_TOOL_CALLS = 8
 MAX_GENERATIONS = 3
-TIME_LIMIT = 60         
+TIME_LIMIT = 60
 PARTS = ("summary", "why_it_matters", "risks", "opportunities", "actions", "bank_view")
-AGENT_ROLE = "research"  
+AGENT_ROLE = "research"
 
 
 class DraftClaim(BaseModel):
@@ -34,32 +34,37 @@ class InsightDraft(BaseModel):
     bank_view: list[DraftClaim] = Field(default_factory=list)
     uncertainty: str = ""
 
+
 def _prompt(name:str) -> str:
     return (PROMPTS_DIR / name).read_text(encoding="utf-8")
 
+
 def find_event(event_id) -> dict | None:
-    events = load_events()
-    for event in events:
+    for event in load_events():
         if event["event_id"] == event_id:
             return event
-    return None
+    return custom_news.find(event_id)
+
 
 def fill(template: str, values: dict) -> str:
     for key, value in values.items():
         template = template.replace("{" + key + "}", str(value))
     return template
 
+
 def _new_state() -> dict:
     return {
         "started": time.time(),
-        "calls": 0,          
-        "results": [],       
-        "refs": set(),       
-        "trace": [],       
+        "calls": 0,
+        "results": [],
+        "refs": set(),
+        "trace": [],
     }
+
 
 def _add_step(state: dict, name: str, result: str, tool: str | None = None) -> None:
     state["trace"].append(TraceStep(step=len(state["trace"]) + 1, name=name, tool=tool, result=result))
+
 
 def _call(state: dict, step_name: str, tool: str, args) -> dict:
     if state["calls"] >= MAX_TOOL_CALLS or TIME_LIMIT < (time.time() - state["started"]):
@@ -79,9 +84,11 @@ def _call(state: dict, step_name: str, tool: str, args) -> dict:
     _add_step(state, step_name, summary, tool)
     return result
 
+
 def _topic_names(topic_ids: list[str]) -> str:
     names = {topic["id"]: topic["name"] for topic in _load_yaml("topics.yaml")}
     return " ".join(names.get(topic_id, topic_id) for topic_id in topic_ids)
+
 
 def gather(company_id:str, event: dict, role: str) -> dict:
     state = _new_state()
@@ -109,6 +116,7 @@ def gather(company_id:str, event: dict, role: str) -> dict:
     _call(state, "Продукты банка", "get_bank_products", {"company_id": company_id, "topics": topics})
 
     return state
+
 
 def generate(state: dict, company_id: str, event: dict, role: str, feedback: str | None = None) -> InsightDraft:
     role_rule = _load_yaml("roles.yaml")[role]
@@ -147,8 +155,7 @@ def generate(state: dict, company_id: str, event: dict, role: str, feedback: str
     return draft
 
 
-def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
-            event: dict, relevance: float) -> InsightCard:
+def claim_converter(state: dict, event: dict):
     sources = {}
     for call in state["results"]:
         for item in call["result"].get("items", []):
@@ -165,6 +172,7 @@ def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
     field_names = {"okved": "отрасль", "region": "регион", "payments": "структура платежей",
                    "counterparties": "контрагенты", "fts_flag": "сведения ФТС", **PRODUCT_NAMES}
 
+
     def to_claim(draft_claim: DraftClaim) -> Claim:
         claim_sources, features = [], []
         for ref in draft_claim.refs:
@@ -177,6 +185,12 @@ def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
         return Claim(text=draft_claim.text, type=ClaimType(draft_claim.type),
                      sources=claim_sources, features=features, confidence=draft_claim.confidence)
 
+    return to_claim
+
+
+def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
+            event: dict, relevance: float) -> InsightCard:
+    to_claim = claim_converter(state, event)
     return InsightCard(
         id=insight_id,
         company_id=company_id,
@@ -190,6 +204,7 @@ def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
         bank_view=[to_claim(c) for c in draft.bank_view],
         uncertainty=draft.uncertainty or None,
     )
+
 
 def _drop_invalid(draft: InsightDraft, state: dict) -> int:
     """Убираем утверждения, у которых остались нарушения после повторной генерации."""
@@ -205,7 +220,9 @@ def _drop_invalid(draft: InsightDraft, state: dict) -> int:
         setattr(draft, part, kept)
     return dropped
 
-def run_insight(company_id: str, event_id: str, role: str, relevance: float = 0.0) -> tuple[InsightCard, list[TraceStep]]:
+
+def run_insight(company_id: str, event_id: str, role: str,
+                relevance: float = 0.0) -> tuple[InsightCard, list[TraceStep], dict]:
     event = find_event(event_id)
     if event is None:
         raise ValueError(f"событие {event_id} не найдено")
@@ -231,7 +248,9 @@ def run_insight(company_id: str, event_id: str, role: str, relevance: float = 0.
     card = resolve(draft, state, company_id, f"{company_id}__{event_id}__{role}", event, relevance)
     seconds = round(time.time() - state["started"], 1)
     _add_step(state, "Готово", f"инструментов: {state['calls']}, генераций: {state['generations']}, {seconds} с")
-    return card, state["trace"]
+
+    context = {"results": state["results"], "refs": sorted(state["refs"])}
+    return card, state["trace"], context
 
 
 if __name__ == "__main__":
@@ -239,7 +258,8 @@ if __name__ == "__main__":
     company = sys.argv[1] if len(sys.argv) > 1 else "U_9250"
     role = sys.argv[2] if len(sys.argv) > 2 else "cfo"
     event = next(e for e in load_events() if "сохранил ключевую ставку" in e["title"])
-    card, trace = run_insight(company, event["event_id"], role, relevance=0.8)
+    card, trace, context = run_insight(company, event["event_id"], role, relevance=0.8)
     print(card.model_dump_json(indent=2))
     for step in trace:
         print(step.step, step.name, step.tool or "", "—", step.result)
+    print("context:", len(context["results"]), "вызовов,", len(context["refs"]), "меток")
