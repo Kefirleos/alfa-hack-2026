@@ -3,12 +3,14 @@ from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, 
 from app.company_profile import get_company_profile
 from app.scoring import get_feed_items
 from fastapi.middleware.cors import CORSMiddleware
+from ml import service
+from ml.llm_client import LLMError
 
 app = FastAPI(title="GenAlpha News Insights API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"], # надо заменить на реальный порт
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000"],
     allow_methods=["*"],
     allow_headers=["*"]
 )
@@ -18,62 +20,31 @@ app.add_middleware(
 def health():
     return {"status": "ok"}
 
+def _call_service(func, *args):
+    """Вызов сервиса разбора с переводом его ошибок в коды HTTP."""
+    try:
+        return func(*args)
+    except service.NotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except NotImplementedError as error:
+        raise HTTPException(status_code=501, detail=str(error))
+    except LLMError as error:
+        raise HTTPException(status_code=503, detail=f"Модель недоступна: {error}")
+
 
 @app.get("/insights/{insight_id}", response_model=InsightCard)
 def get_insight(insight_id: str):
-    # тексты в кавычках чисто символические, считайте что это демо-версия
-    return InsightCard(
-        id=insight_id,
-        company_id="U_demo",
-        relevance=0.5,
-        event=Event(
-            title="Заголовок события",
-            date="2026-10-20",
-            summary=[
-                Claim(
-                    text="Здесь будет описание того, что произошло",
-                    type=ClaimType.fact,
-                    sources=[Source(title="Название источника")]
-                )
-            ]
-        ),
-        why_it_matters=[
-            Claim(
-                text="Здесь будет объяснение того, почему это важно для компании",
-                type=ClaimType.ai_inference,
-                features=["какой-то признак компании"]
-            )
-        ],
-        risks=[
-            Claim(
-                text="Здесь будет описание риска для компании",
-                type=ClaimType.ai_inference,
-                features=["признак компании"]
-            )
-        ],
-        opportunities=[
-            Claim(
-                text="здесь будет описание возможности для компании",
-                type=ClaimType.ai_inference,
-                features=["признак компании"]
-            )
-        ],
-        actions=[
-            Claim(
-                text="здесь будет предложение конкретного действия",
-                type=ClaimType.ai_inference,
-                features=["признак компании"]
-            )
-        ],
-        bank_view=[
-            Claim(
-                text="Здесь будет позиция Альфа банка",
-                type=ClaimType.bank_view,
-                sources=[Source(title="Название документа", doc="файл_аналитики.pdf")]
-            )
-        ],
-        uncertainty="На будущее для проверки формата"
-    )
+    return _call_service(service.get_insight, insight_id)
+
+@app.get("/insights/{insight_id}/trace", response_model=list[TraceStep])
+def get_trace(insight_id: str):
+    return _call_service(service.get_trace, insight_id)
+
+@app.post("/insights/{insight_id}/chat", response_model=ChatAnswer)
+def chat(insight_id: str, data: ChatRequest):
+    return _call_service(service.answer_question, insight_id, data.message)
 
 
 DEMO_IDS = ["U_57706", "U_9250", "U_88715"]  # демо-клиенты из demo_companies.yaml
@@ -107,29 +78,13 @@ def login(data: LoginRequest): # пока что любой логин и пар
         token="demo-token",
         user_name="Тестовый пользователь",
         role=UserRole.cfo,
-        company_id="U_demo1"
-    )
-
-
-@app.get("/insights/{insight_id}/trace", response_model=list[TraceStep])
-def get_trace(insight_id: str): # здесь будут шаги агента
-    return [
-        TraceStep(step=1, name="Планирование", result="Определили, какие данные нужны"),
-        TraceStep(step=2, name="Поиск новостей", tool="search_news", result="Нашли n новостей", sources=[Source(title="Название источника")]),
-        TraceStep(step=3, name="Самопроверка", result="Проверрили, что у каждого вывода есть источник")
-    ]
-
-
-@app.post("/insights/{insight_id}/chat", response_model=ChatAnswer)
-def chat(insight_id: str, data: ChatRequest): # ответ пока не зависит от вопроса
-    return ChatAnswer(
-        answer=[Claim(text="здесь будет ответ на вопрос пользователя", type=ClaimType.ai_inference)]
+        company_id="U_57706"
     )
 
 
 @app.post("/insights/custom", response_model=InsightCard)
-def custom_insight(data: CustomNewsRequest): # возвращаем ту же демку карточки
-    return get_insight("ins_custom")
+def custom_insight(data: CustomNewsRequest):
+    return _call_service(service.custom_insight, data.company_id, data.role, data.text, data.url)
 
 
 @app.get("/compare", response_model=CompareResult)

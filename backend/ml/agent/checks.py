@@ -2,6 +2,8 @@ import re
 
 PARTS = ("summary", "why_it_matters", "risks", "opportunities", "actions", "bank_view")
 
+NUMBER_RE = re.compile(r"\d+\.\d+|\d{2,}")
+
 MONEY_RE = re.compile(r"\d[\d\s,.]*\s*(тыс\.?|млн|млрд|трлн)?\s*(руб|₽)", re.IGNORECASE)
 
 FORBIDDEN = [
@@ -18,39 +20,57 @@ def _has_prefix(refs: list[str], prefix: str) -> bool:
     return any(ref.startswith(prefix) for ref in refs)
 
 
-def rule_check(draft, state: dict) -> list[str]:
+def _report_text(state: dict, refs: list[str]) -> str:
+    """Тексты, даты и названия отчётов банка, на которые ссылается утверждение."""
+    parts = []
+    for call in state["results"]:
+        for item in call["result"].get("items", []):
+            if item.get("ref") in refs:
+                parts.append(f"{item.get('title', '')} {item.get('date', '')} {item.get('text', '')}")
+    return " ".join(parts).replace(",", ".")
+
+
+def claim_problems(claim, state: dict) -> list[str]:
+    """Что не так с одним утверждением (пустой список, если всё в порядке)."""
     known = state["refs"]
     company_flags = {ref[len("client:"):] for ref in known if ref.startswith("client:")}
-    issues = []
+    problems = []
 
+    fake = [ref for ref in claim.refs if ref not in known]
+    if fake:
+        problems.append(f"метки не из результатов инструментов: {', '.join(fake)}")
+
+    if claim.type == "fact" and not _has_prefix(claim.refs, "news:"):
+        problems.append("факт без ссылки на новость")
+    if claim.type == "bank_view":
+        if not _has_prefix(claim.refs, "alfa:"):
+            problems.append("позиция банка без ссылки на отчёт")
+        if any(not ref.startswith("alfa:") for ref in claim.refs):
+            problems.append("у позиции банка допустимы только метки alfa:")
+        # числа из позиции банка должны быть в самом отчёте, иначе банку приписана чужая цифра
+        report = _report_text(state, claim.refs)
+        missing = [n for n in NUMBER_RE.findall(claim.text.replace(",", ".")) if n not in report]
+        if report and missing:
+            problems.append(f"числа {', '.join(missing)} не найдены в отчёте банка")
+    if claim.type == "ai_inference" and not _has_prefix(claim.refs, "client:"):
+        problems.append("вывод не опирается на признак компании")
+    if claim.type == "ad" and not _has_prefix(claim.refs, "product:"):
+        problems.append("продукт не из списка банка")
+
+    if claim.type in ("ai_inference", "ad"):
+        if MONEY_RE.search(claim.text):
+            problems.append("сумма в рублях без данных пользователя")
+        for pattern, flag, message in FORBIDDEN:
+            if (flag is None or flag in company_flags) and pattern.search(claim.text):
+                problems.append(message)
+    return problems
+
+
+def rule_check(draft, state: dict) -> list[str]:
+    issues = []
     for part in PARTS:
         for number, claim in enumerate(getattr(draft, part), start=1):
-            where = f"{part}[{number}]"
-
-            fake = [ref for ref in claim.refs if ref not in known]
-            if fake:
-                issues.append(f"{where}: метки не из результатов инструментов: {', '.join(fake)}")
-
-            if claim.type == "fact" and not _has_prefix(claim.refs, "news:"):
-                issues.append(f"{where}: факт без ссылки на новость")
-            if claim.type == "bank_view":
-                if not _has_prefix(claim.refs, "alfa:"):
-                    issues.append(f"{where}: позиция банка без ссылки на отчёт")
-                if any(not ref.startswith("alfa:") for ref in claim.refs):
-                    issues.append(f"{where}: у позиции банка допустимы только метки alfa:")
-            if claim.type == "ai_inference" and not _has_prefix(claim.refs, "client:"):
-                issues.append(f"{where}: вывод не опирается на признак компании")
-            if claim.type == "ad" and not _has_prefix(claim.refs, "product:"):
-                issues.append(f"{where}: продукт не из списка банка")
-
-            if claim.type not in ("ai_inference", "ad"):
-                continue
-            if MONEY_RE.search(claim.text):
-                issues.append(f"{where}: сумма в рублях без данных пользователя")
-            for pattern, flag, message in FORBIDDEN:
-                if (flag is None or flag in company_flags) and pattern.search(claim.text):
-                    issues.append(f"{where}: {message}")
-
+            issues += [f"{part}[{number}]: {problem}" for problem in claim_problems(claim, state)]
     if not draft.uncertainty:
         issues.append("uncertainty: не указано, чего не хватает для точного вывода")
     return issues

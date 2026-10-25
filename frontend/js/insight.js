@@ -26,6 +26,7 @@ async function load() {
   const id = getId();
 
   try {
+    document.getElementById("insight-title").textContent = "Строим разбор, это может занять до минуты…";
     const data = await apiGet("/insights/" + encodeURIComponent(id));
     document.getElementById("insight-title").textContent = data.event.title;
     document.getElementById("insight-date").textContent = data.event.date;

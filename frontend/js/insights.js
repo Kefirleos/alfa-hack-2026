@@ -6,7 +6,7 @@ async function load() {
   const companyId = getActiveCompanyId();
 
   try {
-    feedCache = await apiGet("/companies/" + companyId + "/feed");
+    feedCache = await apiGet("/companies/" + companyId + "/feed?role=" + getRole());
     render(list);
   } catch (e) {
     showError(list, e);

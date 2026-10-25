@@ -12,7 +12,7 @@ async function load() {
   }
 
   try {
-    const feed = await apiGet("/companies/" + companyId + "/feed");
+    const feed = await apiGet("/companies/" + companyId + "/feed?role=" + getRole());
     renderPreviews(previews, feed);
   } catch (e) {
     showError(previews, e);
