@@ -124,18 +124,17 @@ function renderRisk(data) {
 async function renderLinkedInsights(data) {
   const list = document.getElementById("linked-insights");
   clearNode(list);
-  if (!data.insight_ids.length) {
+  const feed = await apiGet("/companies/" + encodeURIComponent(getActiveCompanyId()) + "/feed?role=" + encodeURIComponent(getRole())).catch(() => []);
+  if (!feed.length) {
     showEmpty(list, "Связанных инсайтов нет");
     return;
   }
-  const cards = await Promise.all(data.insight_ids.map((id) => apiGet("/insights/" + encodeURIComponent(id)).catch(() => null)));
-  cards.forEach((card, index) => {
-    if (!card) return;
+  feed.slice(0, 5).forEach((item) => {
     const li = document.createElement("li");
     li.className = "list-item";
     li.innerHTML =
-      '<a class="source-link" href="insight.html?id=' + encodeURIComponent(data.insight_ids[index]) + '">' +
-      escapeHtml(card.event.title) + "</a>";
+      '<a class="source-link" href="insight.html?id=' + encodeURIComponent(item.insight_id) + '">' +
+      escapeHtml(item.title) + "</a>";
     list.appendChild(li);
   });
 }
