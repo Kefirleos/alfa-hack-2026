@@ -5,8 +5,7 @@ from app.schemas import ChatAnswer, InsightCard, TraceStep, UserRole
 from app.scoring import company_signals, load_events, score_event
 from ml import custom_news, insight_store
 from ml.agent import chat
-from ml.agent.loop import find_event, run_insight
-
+from ml.agent.loop import find_event, gather, run_insight
 
 class NotFound(LookupError):
     ""
@@ -86,11 +85,13 @@ def answer_question(insight_id: str, message: str, demo: bool = False) -> ChatAn
     if cached and not demo:
         return cached
 
+    company_id, event_id, role = parse_insight_id(insight_id)
+    event = find_event(event_id)
     context = insight_store.get_context(insight_id)
     if context is None:
-        raise ValueError("Разбор сохранён без данных для чата: удалите его файл в data/insights и откройте заново")
-    _, event_id, role = parse_insight_id(insight_id)
-    answer = chat.answer(card, context, find_event(event_id), role.value, message)
+        state = gather(company_id, event, role.value)
+        context = {"results": state["results"], "refs": sorted(state["refs"])}
+    answer = chat.answer(card, context, event, role.value, message)
     insight_store.save_chat(insight_id, message, answer, demo=demo)
     return answer
   
