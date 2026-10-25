@@ -94,7 +94,6 @@
   audience: [ceo, cfo]
   note: "В ленте 30 последних записей всех рубрик."
 
-
 - id: kommersant_novosibirsk
   name: Коммерсантъ — Новосибирск
   type: rss
@@ -105,8 +104,6 @@
   checked: true
   audience: [ceo]
   note: "Региональные новости; Иркутской области (U_9250) в списке Коммерсанта нет."
-
-
 
 - id: moex_main
   name: Московская биржа — главные новости
@@ -139,3 +136,113 @@
     - цена исполнения
     - цены исполнения
 
+- id: vedomosti_energy
+  name: Ведомости — ТЭК
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/business/energy.xml
+  weight: 0.7
+  max_age_days: 30
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [ceo, cfo]
+  industries: ["46", "19", "06"]
+  note: "Нефтепродукты, биржевые цены на топливо, демпфер, экспортные пошлины — для U_57706 (46.71). 25.10: 24 свежих из 200."
+
+- id: vedomosti_industry
+  name: Ведомости — Промышленность
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/business/industry.xml
+  weight: 0.7
+  max_age_days: 30
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [ceo, cfo]
+  industries: ["27", "28", "29"]
+  note: "Машиностроение, электротехника, компоненты, импортозамещение — для U_88715 (27.90). 25.10: 11 свежих из 200."
+
+- id: vedomosti_transport
+  name: Ведомости — Транспорт
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/business/transport.xml
+  weight: 0.6
+  max_age_days: 30
+  priority: P1
+  enabled: true
+  checked: true
+  audience: [ceo]
+  industries: ["49", "52"]
+  note: "Логистика, железная дорога, порты, лизинг техники — тема logistics у всех трёх клиентов. 25.10: 15 свежих из 200."
+
+- id: vedomosti_taxes
+  name: Ведомости — Налоги и сборы
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/economics/taxes.xml
+  weight: 0.7
+  max_age_days: 30
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [accountant, cfo]
+  note: "Налоги, утильсбор, пошлины — для роли бухгалтера. 25.10: 12 свежих из 200."
+
+- id: vedomosti_banks
+  name: Ведомости — Банки
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/finance/banks.xml
+  weight: 0.6
+  max_age_days: 30
+  priority: P1
+  enabled: true
+  checked: true
+  audience: [cfo, treasurer]
+  note: "Ставки по кредитам и депозитам, условия банков для бизнеса. 25.10: 19 свежих из 200."
+
+- id: vedomosti_realty
+  name: Ведомости — Недвижимость
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/realty.xml
+  weight: 0.6
+  max_age_days: 30
+  priority: P1
+  enabled: true
+  checked: false
+  audience: [ceo, cfo]
+  industries: ["41", "42", "43", "68"]
+  note: "Общая рубрика вместо пустой «Стройки и инфраструктура»: девелопмент, стройка, ипотека — для U_9250. Если в --dry-run new 0 — выключить."
+
+- id: government
+  name: Правительство России — все материалы
+  type: rss
+  url: http://government.ru/all/rss/
+  weight: 0.9
+  priority: P0
+  enabled: true
+  checked: true
+  audience: [ceo, cfo, accountant]
+  note: "Постановления и решения: пошлины, утильсбор, госпрограммы, поддержка отраслей. 25.10: 20 записей, много протокольных («Заседание Правительства») — отсеет разметка."
+
+- id: vedomosti_infrastructure
+  name: Ведомости — Стройки и инфраструктура
+  type: rss
+  url: https://www.vedomosti.ru/rss/rubric/realty/infrastructure.xml
+  weight: 0.7
+  max_age_days: 30
+  priority: P1
+  enabled: false
+  checked: true
+  audience: [ceo, cfo]
+  industries: ["41", "42", "43"]
+  note: "Выключено 25.10: в ленте только архив (2017 год), свежих записей нет."
+
+- id: eg_online
+  name: Экономика и жизнь — новости
+  type: rss
+  url: https://www.eg-online.ru/news/news_rss.php?SID=605
+  weight: 0.6
+  priority: P1
+  enabled: false
+  checked: true
+  audience: [accountant]
+  note: "Выключено 25.10: лента пустая (0 записей)."

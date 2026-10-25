@@ -17,6 +17,7 @@ OUT_FILE = config.PROCESSED_DIR / "news_raw.jsonl"
 TIMEOUT = 60
 HEADERS = {"User-Agent": "Mozilla/5.0 (alfa-hack-2026 news reader)"}
 MAX_TEXT = 4000
+MAX_AGE_DAYS = 90
 
 def load_sources() -> list[dict]:
     with open(SOURCES_FILE, encoding="utf-8") as f:
@@ -37,6 +38,12 @@ def _published_iso(entry) -> str | None:
     if not parsed:
         return None
     return datetime.fromtimestamp(calendar.timegm(parsed), tz= timezone.utc).isoformat()
+
+def _too_old(record: dict, max_age_days: int) -> bool:
+    if not record["published"]:
+        return False
+    published = datetime.fromisoformat(record["published"])
+    return (datetime.now(timezone.utc) - published).days > max_age_days
 
 def _make_id(url: str, title: str) -> str:
     return hashlib.sha256((url or title).encode("utf-8")).hexdigest()[:12]
@@ -119,7 +126,7 @@ def main():
     seen_ids, seen_hashes = load_seen()
     OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     total_new = 0
- 
+
     output = contextlib.nullcontext() if args.dry_run else open(OUT_FILE, "a", encoding="utf-8")
     with output as out:
         for source in sources:
@@ -128,9 +135,14 @@ def main():
             except Exception as error:
                 print(f"{source['id']}: error {error}")
                 continue
- 
+
+            max_age_days = source.get("max_age_days", MAX_AGE_DAYS)
             new_count = 0
+            old_count = 0
             for record in records:
+                if _too_old(record, max_age_days):
+                    old_count += 1
+                    continue
                 if record["event_id"] in seen_ids or record["content_hash"] in seen_hashes:
                     continue
                 seen_ids.add(record["event_id"])
@@ -141,8 +153,8 @@ def main():
                 else:
                     out.write(json.dumps(record, ensure_ascii=False) + "\n")
             total_new += new_count
-            print(f"{source['id']}: in the feed {len(records)}, new {new_count}")
- 
+            print(f"{source['id']}: in the feed {len(records)}, new {new_count}, older than {max_age_days} days {old_count}")
+
     if args.dry_run:
         print(f"\nTrial run: there would be {total_new} new ones, the file has not been modified.")
     else:
