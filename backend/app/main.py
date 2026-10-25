@@ -3,7 +3,7 @@ from app.schemas import ClaimType, Source, Claim, Event, InsightCard, ItemKind, 
 from app.company_profile import get_company_profile
 from app.scoring import get_feed_items
 from fastapi.middleware.cors import CORSMiddleware
-from ml import service
+from ml import insight_store, service
 from ml.llm_client import LLMError
 
 app = FastAPI(title="GenAlpha News Insights API")
@@ -102,7 +102,12 @@ def compare(company_a: str, company_b: str, role: UserRole = UserRole.ceo):
 
 
 @app.post("/feedback")
-def feedback(data: FeedBackRequest): # пока ниче не сохраняется
+def feedback(data: FeedBackRequest):
+    try:
+        service.parse_insight_id(data.insight_id)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    insight_store.save_feedback(data.insight_id, data.useful, data.reason)
     return {"status": "ok"}
 
 

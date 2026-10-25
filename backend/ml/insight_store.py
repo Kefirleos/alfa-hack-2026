@@ -4,6 +4,7 @@ import re
 
 from app.schemas import ChatAnswer, InsightCard, TraceStep
 from ml import config
+from datetime import datetime, timezone
 
 INSIGHTS_DIR = config.PROCESSED_DIR.parent / "insights"
 DEMO_DIR = config.PROCESSED_DIR.parents[1] / "demo_cache"
@@ -67,3 +68,10 @@ def save_chat(insight_id: str, message: str, answer: ChatAnswer, demo: bool = Fa
     data = {"insight_id": insight_id, "question": message, "answer": answer.model_dump()}
     _path(folder, _question_key(insight_id, message)).write_text(
         json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+def save_feedback(insight_id: str, useful: bool, reason: str | None = None) -> None:
+    INSIGHTS_DIR.mkdir(parents=True, exist_ok=True)
+    row = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+           "insight_id": insight_id, "useful": useful, "reason": (reason or "")[:500] or None}
+    with open(INSIGHTS_DIR / "feedback.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
