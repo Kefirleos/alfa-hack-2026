@@ -207,7 +207,6 @@ def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
 
 
 def _drop_invalid(draft: InsightDraft, state: dict) -> int:
-    """Убираем утверждения, у которых остались нарушения после повторной генерации."""
     dropped = 0
     for part in PARTS:
         kept = []
@@ -219,6 +218,18 @@ def _drop_invalid(draft: InsightDraft, state: dict) -> int:
                 kept.append(claim)
         setattr(draft, part, kept)
     return dropped
+
+
+def _fallback_bank_view(state: dict, cited: list[str]) -> DraftClaim | None:
+    items = [item for call in state["results"] if call["tool"] == "search_alfa_analytics"
+             for item in call["result"].get("items", [])]
+    preferred = [item for item in items if item["ref"] in cited]
+    if not (preferred or items):
+        return None
+    newest = max(preferred or items, key=lambda item: item.get("date", ""))
+    return DraftClaim(
+        text=f"По теме есть отчёт Альфа-Банка «{newest['title']}» от {newest['date']}, стр. {newest['page']}.",
+        type="bank_view", refs=[newest["ref"]], confidence="low")
 
 
 def run_insight(company_id: str, event_id: str, role: str,
@@ -240,10 +251,16 @@ def run_insight(company_id: str, event_id: str, role: str,
         _add_step(state, "Повторная самопроверка", "замечаний нет" if not issues else f"замечаний: {len(issues)}")
 
     if issues:
+        cited = [ref for claim in draft.bank_view for ref in claim.refs if ref.startswith("alfa:")]
         dropped = _drop_invalid(draft, state)
         if dropped:
             draft.uncertainty = (draft.uncertainty + f" Снято утверждений без подтверждения: {dropped}.").strip()
             _add_step(state, "Снятие неподтверждённого", f"снято: {dropped}")
+        if cited and not draft.bank_view:
+            fallback = _fallback_bank_view(state, cited)
+            if fallback:
+                draft.bank_view = [fallback]
+                _add_step(state, "Позиция банка из отчёта", fallback.refs[0])
 
     card = resolve(draft, state, company_id, f"{company_id}__{event_id}__{role}", event, relevance)
     seconds = round(time.time() - state["started"], 1)
