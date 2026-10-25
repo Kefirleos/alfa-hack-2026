@@ -1,0 +1,13 @@
+.git
+**/.venv
+**/__pycache__
+**/*.pyc
+.env
+backend/data/app.db
+backend/data/insights
+backend/llm_cache
+backend/data/raw/*.pdf
+frontend/js
+frontend/css
+frontend/assets
+frontend/*.html
