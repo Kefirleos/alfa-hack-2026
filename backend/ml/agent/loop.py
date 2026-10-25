@@ -8,7 +8,7 @@ from app.schemas import Claim, ClaimType, Event, InsightCard, Source, TraceStep
 from app.scoring import load_events
 from ml import llm_client
 from ml.agent.tools import PRODUCT_NAMES, run_tool, _load_yaml
-from ml.agent.checks import rule_check
+from ml.agent.checks import claim_problems, rule_check
 
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 MAX_TOOL_CALLS = 8
@@ -140,7 +140,7 @@ def generate(state: dict, company_id: str, event: dict, role: str, feedback: str
     if feedback:
         messages.append({"role": "user", "content": "Исправь разбор с учётом замечаний:\n" + feedback})
 
-    draft = llm_client.chat_json(AGENT_ROLE, messages, InsightDraft, max_tokens=4000, temperature=0.2)
+    draft = llm_client.chat_json(AGENT_ROLE, messages, InsightDraft, max_tokens=8000, temperature=0.2)
     state["generations"] = state.get("generations", 0) + 1
     total = sum(len(getattr(draft, part)) for part in PARTS)
     _add_step(state, "Генерация разбора", f"утверждений: {total}")
@@ -192,18 +192,16 @@ def resolve(draft: InsightDraft, state: dict, company_id: str, insight_id: str,
     )
 
 def _drop_invalid(draft: InsightDraft, state: dict) -> int:
-    known = state["refs"]
-    required = {"fact": "news:", "bank_view": "alfa:", "ad": "product:"}
+    """Убираем утверждения, у которых остались нарушения после повторной генерации."""
     dropped = 0
     for part in PARTS:
         kept = []
         for claim in getattr(draft, part):
-            claim.refs = [ref for ref in claim.refs if ref in known]
-            prefix = required.get(claim.type)
-            if prefix and not any(ref.startswith(prefix) for ref in claim.refs):
+            claim.refs = [ref for ref in claim.refs if ref in state["refs"]]
+            if claim_problems(claim, state):
                 dropped += 1
-                continue
-            kept.append(claim)
+            else:
+                kept.append(claim)
         setattr(draft, part, kept)
     return dropped
 
