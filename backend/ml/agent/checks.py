@@ -18,39 +18,45 @@ def _has_prefix(refs: list[str], prefix: str) -> bool:
     return any(ref.startswith(prefix) for ref in refs)
 
 
-def rule_check(draft, state: dict) -> list[str]:
+def check_claims(claims: list, part: str, state: dict) -> list[str]:
     known = state["refs"]
     company_flags = {ref[len("client:"):] for ref in known if ref.startswith("client:")}
     issues = []
 
+    for number, claim in enumerate(claims, start=1):
+        where = f"{part}[{number}]"
+
+        fake = [ref for ref in claim.refs if ref not in known]
+        if fake:
+            issues.append(f"{where}: метки не из результатов инструментов: {', '.join(fake)}")
+
+        if claim.type == "fact" and not _has_prefix(claim.refs, "news:"):
+            issues.append(f"{where}: факт без ссылки на новость")
+        if claim.type == "bank_view":
+            if not _has_prefix(claim.refs, "alfa:"):
+                issues.append(f"{where}: позиция банка без ссылки на отчёт")
+            if any(not ref.startswith("alfa:") for ref in claim.refs):
+                issues.append(f"{where}: у позиции банка допустимы только метки alfa:")
+        if claim.type == "ai_inference" and not _has_prefix(claim.refs, "client:"):
+            issues.append(f"{where}: вывод не опирается на признак компании")
+        if claim.type == "ad" and not _has_prefix(claim.refs, "product:"):
+            issues.append(f"{where}: продукт не из списка банка")
+
+        if claim.type not in ("ai_inference", "ad"):
+            continue
+        if MONEY_RE.search(claim.text):
+            issues.append(f"{where}: сумма в рублях без данных пользователя")
+        for pattern, flag, message in FORBIDDEN:
+            if (flag is None or flag in company_flags) and pattern.search(claim.text):
+                issues.append(f"{where}: {message}")
+
+    return issues
+
+
+def rule_check(draft, state: dict) -> list[str]:
+    issues = []
     for part in PARTS:
-        for number, claim in enumerate(getattr(draft, part), start=1):
-            where = f"{part}[{number}]"
-
-            fake = [ref for ref in claim.refs if ref not in known]
-            if fake:
-                issues.append(f"{where}: метки не из результатов инструментов: {', '.join(fake)}")
-
-            if claim.type == "fact" and not _has_prefix(claim.refs, "news:"):
-                issues.append(f"{where}: факт без ссылки на новость")
-            if claim.type == "bank_view":
-                if not _has_prefix(claim.refs, "alfa:"):
-                    issues.append(f"{where}: позиция банка без ссылки на отчёт")
-                if any(not ref.startswith("alfa:") for ref in claim.refs):
-                    issues.append(f"{where}: у позиции банка допустимы только метки alfa:")
-            if claim.type == "ai_inference" and not _has_prefix(claim.refs, "client:"):
-                issues.append(f"{where}: вывод не опирается на признак компании")
-            if claim.type == "ad" and not _has_prefix(claim.refs, "product:"):
-                issues.append(f"{where}: продукт не из списка банка")
-
-            if claim.type not in ("ai_inference", "ad"):
-                continue
-            if MONEY_RE.search(claim.text):
-                issues.append(f"{where}: сумма в рублях без данных пользователя")
-            for pattern, flag, message in FORBIDDEN:
-                if (flag is None or flag in company_flags) and pattern.search(claim.text):
-                    issues.append(f"{where}: {message}")
-
+        issues += check_claims(getattr(draft, part), part, state)
     if not draft.uncertainty:
         issues.append("uncertainty: не указано, чего не хватает для точного вывода")
     return issues
@@ -75,4 +81,10 @@ if __name__ == "__main__":
         uncertainty="",
     )
     for issue in rule_check(draft, state):
+        print(issue)
+
+    print("--- чат")
+    answer = [claim("Банк ждёт паузу", "bank_view", ["alfa:x.pdf#1"]),
+              claim("Стоит проверить кредит", "ai_inference", [])]
+    for issue in check_claims(answer, "answer", state):
         print(issue)
