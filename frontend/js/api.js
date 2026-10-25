@@ -6,6 +6,13 @@ const API_FALLBACKS = ["http://localhost:8000"];
 
 const COMPANY_KEY = "alfa.company";
 const USER_KEY = "alfa.user";
+const ROLE_KEY = "alfa.role";
+const ROLES = {
+  ceo: "Генеральный директор",
+  cfo: "Финансовый директор",
+  treasurer: "Руководитель казначейства",
+  accountant: "Главный бухгалтер",
+};
 
 let _apiBase = API;
 let _apiResolved = false;
@@ -34,7 +41,14 @@ async function resolveApi() {
 async function apiGet(path) {
   const base = await resolveApi();
   const res = await fetch(base + path, { cache: "no-store" });
-  if (!res.ok) throw new Error("HTTP " + res.status + " — " + path);
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json()).detail || ""; } catch (e) {}
+    const error = new Error("HTTP " + res.status + " — " + path);
+    error.status = res.status;
+    error.detail = typeof detail === "string" ? detail : "";
+    throw error;
+  }
   return res.json();
 }
 
@@ -45,7 +59,14 @@ async function apiPost(path, body) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body || {}),
   });
-  if (!res.ok) throw new Error("HTTP " + res.status + " — " + path);
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json()).detail || ""; } catch (e) {}
+    const error = new Error("HTTP " + res.status + " — " + path);
+    error.status = res.status;
+    error.detail = typeof detail === "string" ? detail : "";
+    throw error;
+  }
   return res.json();
 }
 
@@ -125,8 +146,9 @@ function getActiveCompanyId() {
   return localStorage.getItem(COMPANY_KEY) || "U_57706";
 }
 
-/* Роль берём из входа (по умолчанию фин. директор): от неё зависит лента. */
 function getRole() {
+  const saved = localStorage.getItem(ROLE_KEY);
+  if (saved && ROLES[saved]) return saved;
   try {
     return JSON.parse(localStorage.getItem(USER_KEY) || "{}").role || "cfo";
   } catch (e) {
@@ -181,11 +203,27 @@ async function initChrome(onCompanyChange) {
     const login = await apiPost("/auth/login", { login: "demo", password: "demo" });
     localStorage.setItem(USER_KEY, JSON.stringify(login));
     if (userName) {
-      const role = login.role === "cfo" ? "фин. директор" : login.role;
-      userName.textContent = login.user_name + " · " + role;
+      userName.textContent = login.user_name;
     }
   } catch (e) {
     if (userName) userName.textContent = "Демо-пользователь";
+  }
+  if (userName && !document.getElementById("role-select")) {
+    const roleSelect = document.createElement("select");
+    roleSelect.id = "role-select";
+    roleSelect.title = "Роль";
+    Object.keys(ROLES).forEach((key) => {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = ROLES[key];
+      roleSelect.appendChild(option);
+    });
+    roleSelect.value = getRole();
+    roleSelect.addEventListener("change", () => {
+      localStorage.setItem(ROLE_KEY, roleSelect.value);
+      location.reload();
+    });
+    userName.parentNode.insertBefore(roleSelect, userName);
   }
 }
 
@@ -197,12 +235,22 @@ function clearNode(el) {
 
 function showError(el, error) {
   if (!el) return;
+  let title = "Не удалось загрузить данные с сервера";
+  let hint = 'Проверьте, что бэкенд запущен: <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">http://127.0.0.1:8000/docs</a>';
+  if (error && error.status === 503) {
+    title = "Модель сейчас недоступна";
+    hint = "Нет ключа LLM_API_KEY, закончился дневной лимит или модель не отвечает. Без ключа открываются только заранее подготовленные разборы для клиентов U_57706, U_9250, U_88715 и ролей «Финансовый директор» и «Генеральный директор».";
+  } else if (error && error.status === 400 && error.detail) {
+    title = "Не удалось обработать запрос";
+    hint = escapeHtml(error.detail);
+  } else if (error && error.status === 404) {
+    title = "Данные не найдены";
+    hint = "Проверьте клиента и роль в шапке страницы.";
+  }
   el.innerHTML =
     '<div class="error-box">' +
-    "<div class=\"error-title\">Не удалось загрузить данные с сервера</div>" +
-    '<div class="footer-note">' +
-    "Проверь, что бэкенд запущен: <a href=\"http://127.0.0.1:8000/docs\" target=\"_blank\" rel=\"noopener\">http://127.0.0.1:8000/docs</a>" +
-    "</div>" +
+    '<div class="error-title">' + title + "</div>" +
+    '<div class="footer-note">' + hint + "</div>" +
     '<div class="footer-note">Детали: ' + escapeHtml(String(error && error.message ? error.message : error)) + "</div>" +
     "</div>";
 }
