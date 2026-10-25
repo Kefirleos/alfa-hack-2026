@@ -5,10 +5,7 @@
 *.key
 *.eml
 
-data/raw/
 Материалы хакатона/
-*.csv
-!data/synthetic/*.csv
 
 *.md
 !README.md
@@ -42,5 +39,4 @@ Thumbs.db
 
 
 # файлы
-**/data/raw
 **/data/insights
