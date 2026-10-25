@@ -35,7 +35,7 @@ def check_model(role: str) -> None:
     messages = [{"role": "user", "content": "Answer in one word: what is the capital of Russia?"}]
     started = time.time()
     try:
-        out = llm_client._call(model, messages, {"temperature": 0, "max_tokens": 100})
+        out = llm_client._call(model, messages, {"temperature": 0, "max_tokens": 1000})
     except Exception as e:
         print(f"{role:9} {model:40} ERROR  {str(e)[:150]}")
         return
