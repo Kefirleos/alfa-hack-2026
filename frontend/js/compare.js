@@ -51,7 +51,7 @@ async function render(idA, idB) {
 
   try {
     const [compare, analyticsA, analyticsB] = await Promise.all([
-      apiGet("/compare?company_a=" + encodeURIComponent(idA) + "&company_b=" + encodeURIComponent(idB)),
+      apiGet("/compare?company_a=" + encodeURIComponent(idA) + "&company_b=" + encodeURIComponent(idB) + "&role=" + getRole()),
       apiGet("/companies/" + encodeURIComponent(idA) + "/analytics"),
       apiGet("/companies/" + encodeURIComponent(idB) + "/analytics"),
     ]);
