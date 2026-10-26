@@ -154,7 +154,7 @@ def rank_events(profile: dict, role: str, limit: int = 10) -> list[dict]:
     for s in scored:
         if s["score"] < MIN_SCORE:
             break  # список отсортирован: дальше только ниже порога
-        title_key = s["event"]["title"].split("//")[-1].strip().lower()[:40] # один сюжет в разных заголовках не повтоярется
+        title_key = s["event"]["title"].split("//")[-1].strip().lower()[:40] # один сюжет в разных заголовках не повторяется
         topic_day = (s["topic"], s["event"]["published"][:10])
         if title_key in seen_titles or topic_day in seen_topic_days or per_topic.get(s["topic"], 0) >= MAX_PER_TOPIC:
             continue

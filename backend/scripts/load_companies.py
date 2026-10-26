@@ -6,7 +6,7 @@ from app.db import get_connection, init_db
 RAW_CSV = Path(__file__).resolve().parents[1] / "data" / "raw" / "df_Uid_data_hack.csv"
 
 
-BAD_IDS = {"U_428697"} # этот ID у 12 разных компаний, пока что будем игнорировать его как ошибку, позже чекнем
+BAD_IDS = {"U_428697"} # этот ID встречается у 12 разных компаний: считаем это ошибкой в данных и пропускаем
 
 
 def to_int(value: str):

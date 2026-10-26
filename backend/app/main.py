@@ -73,7 +73,7 @@ def get_feed(company_id: str, role: UserRole = UserRole.ceo, limit: int = 10):
 
 
 @app.post("/auth/login", response_model=LoginResponse)
-def login(data: LoginRequest): # пока что любой логин и пароль
+def login(data: LoginRequest): # демо-вход: логин и пароль не проверяются
     return LoginResponse(
         token="demo-token",
         user_name="Тестовый пользователь",

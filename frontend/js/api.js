@@ -189,7 +189,9 @@ async function initChrome(onCompanyChange) {
       });
       select.addEventListener("change", () => {
         setActiveCompanyId(select.value);
-        if (onCompanyChange) onCompanyChange(select.value);
+        /* страница строится заново, поэтому обработчики не копятся; разбор относится к прежнему клиенту, с него уходим в ленту */
+        if (location.pathname.endsWith("/insight.html")) location.href = "insights.html";
+        else location.reload();
       });
     }
   } catch (e) {

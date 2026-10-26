@@ -16,12 +16,12 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS companies (
     id TEXT PRIMARY KEY, -- SYNTHETIC_U
     okved_code TEXT, -- MAINOKVED_CODE из данных
-    okved_div TEXT, -- первые 2 цифры кодаБ по сути раздел
+    okved_div TEXT, -- раздел ОКВЭД: цифры кода до первой точки
     okved_name TEXT,
     ownership TEXT, -- OKFS_NAME
     age_group TEXT,
     stage TEXT, -- ECO_MARK_LABEL
-    negative_mark INTEGER, -- пока не до конца понял че это, РАЗОБРАТЬСЯ
+    negative_mark INTEGER, -- NEGATIVEMARK, признак ключевого собственника, в выводах не используется
     workers_fns TEXT,
     cl_type TEXT, -- CLIENT / PROSPECT / CLOSE_CLIENT
     has_rko INTEGER,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS companies (
     fts_flag INTEGER,
     fts_countries TEXT, -- страны подаются через запятую
     revenue REAL,
-    revenue_is_stub INTEGER, -- будет 1 если выручка ровно 1000 (временно для тестов)
+    revenue_is_stub INTEGER, -- 1, если выручка ровно 1000 (заглушка в данных)
     group_id TEXT,
     city TEXT,
     region TEXT
