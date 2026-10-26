@@ -13,11 +13,13 @@ from ml import config
 
 ROLES = ("fast", "writer", "critic", "research", "fallback", "vision")
 
-class  LLMError(RuntimeError):
-    ""
+class LLMError(RuntimeError):
+    """Базовая ошибка при работе с LLM-шлюзом."""
+
 
 class LLMOfflineError(LLMError):
-    ""
+    """Запрос к модели заблокирован, потому что включён OFFLINE_MODE и ответа нет в кэше."""
+    
 
 def model_for(role: str) -> str:
     if role not in ROLES:

@@ -8,15 +8,15 @@ from ml.agent import chat
 from ml.agent.loop import find_event, gather, run_insight
 
 class NotFound(LookupError):
-    ""
+    """Базовая ошибка: запрошенный объект не найден."""
 
 
 class CompanyNotFound(NotFound):
-    ""
+    """Компания с указанным company_id отсутствует в базе."""
 
 
 class EventNotFound(NotFound):
-    ""
+    """Событие (новость) с указанным event_id не найдено."""
 
 def make_insight_id(company_id: str, event_id: str, role: UserRole | str) -> str:
     role_value = role.value if isinstance(role, UserRole) else role
