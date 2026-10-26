@@ -6,7 +6,7 @@
 
 - Файлы `backend/data/raw/df_Uid_data_hack.csv`, `df_Uid_payment_hack.csv`, `df_Fid_Uid_link_hack.csv`: выгрузки Альфа-Банка для хакатона (профили компаний, платежи, связи). Используются только в рамках хакатона, хранятся в приватном репозитории и не публикуются.
 - Девять PDF-отчётов аналитики Альфа-Банка в `backend/data/raw/*.pdf`: Fixed Income Strategy 3Q26, Macro Insights Policy Rate, Inflation tracker, Gold digest, Бонд Бриф, Macro stat 1H26, Consumption, Russian Steels, 7M26. Предоставлены организаторами, лежат в приватном репозитории. По ним построен текстовый индекс (`backend/data/processed/alfa_pages.jsonl`), в карточках даются ссылки на документ и страницу.
-- Аналитическая записка и описание кейса от организаторов используются как справочные материалы.
+- Описание кейса от организаторов используется как справочный материал. Аналитическая записка `analytical_paper_for_Alfa_Business.md` написана командой.
 
 ## Источники новостей
 
@@ -18,7 +18,6 @@
 - ПРАЙМ: 1prime.ru
 - Интерфакс (экономика): interfax.ru
 - Правительство России: government.ru
-- Экономика и жизнь: eg-online.ru
 
 Актуальный список включённых источников задан в `backend/data/reference/sources.yaml`.
 
@@ -28,10 +27,10 @@
 
 - `google/gemma-4-26b-a4b-it` (Google, Gemma Terms of Use): разметка новостей
 - `deepseek/deepseek-v4.1-flash` (DeepSeek): основной разбор и чат
-- `qwen/qwen3.6-35b-a3b` (Alibaba Cloud, Qwen): запасная роль WRITER
-- `z-ai/glm-5.3-flash` (Z.ai, Zhipu AI): запасная роль CRITIC
-- `moonshotai/kimi-k2.6` (Moonshot AI): запасная модель
-- `qwen/qwen3-vl-30b-a3b-instruct` (Alibaba Cloud, Qwen): модель для таблиц и графиков из PDF, подготовлена
+- `qwen/qwen3.6-35b-a3b` (Alibaba Cloud, Qwen): роль WRITER, задана в настройках, в текущей версии не вызывается
+- `z-ai/glm-5.3-flash` (Z.ai, Zhipu AI): роль CRITIC, задана в настройках, в текущей версии не вызывается
+- `moonshotai/kimi-k2.6` (Moonshot AI): запасная модель, вызывается, если основная не ответила
+- `qwen/qwen3-vl-30b-a3b-instruct` (Alibaba Cloud, Qwen): роль VISION для таблиц и графиков из PDF, задана в настройках, в текущей версии не вызывается (текст отчётов распознан через Tesseract)
 
 
 ## Библиотеки Python
@@ -82,7 +81,7 @@
 
 ## Смоделированные данные
 
-Данные витрины интерфейса (счета, платежи, кредитные предложения, курсы валют, «уровень риска») смоделированы командой по профилю клиента, код в `frontend/ext/real_data.py` и `frontend/ext/demo_data.py`. Это не данные банка, на страницах они подписаны как смоделированные.
+Данные витрины интерфейса (счета, платежи, кредитные предложения, курсы валют, «уровень риска») смоделированы командой по профилю клиента, код в `frontend/ext/real_data.py`, `frontend/ext/demo_data.py` и `frontend/ext/analytics_ext.py`. Это не данные банка: так они описаны в README, а в интерфейсе пометка «смоделировано» стоит в строках платежей и кредитов.
 
 ## Готовые агентные системы
 
